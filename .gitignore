@@ -4,5 +4,6 @@ nakamura/
 3akai-ux/
 sling/
 activemq-data/
+load/
 .nakamura.pid
 derby.log
