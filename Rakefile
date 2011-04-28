@@ -3,7 +3,7 @@ require 'git'
 
 projects = ["./sparsemapcontent", "./solr", "./nakamura"]
 
-CLEAN_FILES = ["./derby.log", "./sling", "./activemq-data"]
+CLEAN_FILES = ["./derby.log", "./sling", "./activemq-data", "./store"]
 task :clean do
   touch CLEAN_FILES
   rm_r CLEAN_FILES
