@@ -3,6 +3,8 @@ require 'git'
 
 projects = ["./sparsemapcontent", "./solr", "./nakamura"]
 
+JAVA_OPTS = "-Xms256m -Xmx1024m -XX:PermSize=64m -XX:MaxPermSize=512m"
+
 CLEAN_FILES = ["./derby.log", "./sling", "./activemq-data", "./store"]
 task :clean do
   touch CLEAN_FILES
@@ -27,7 +29,7 @@ task :fastrebuild do
 end
 
 task :run => [:kill] do
-  pid = fork{exec("java -jar ./nakamura/app/target/org.sakaiproject.nakamura.app-0.10-SNAPSHOT.jar")}
+  pid = fork{exec("java #{JAVA_OPTS} -jar ./nakamura/app/target/org.sakaiproject.nakamura.app-0.10-SNAPSHOT.jar")}
   Process.detach(pid)
   File.open(".nakamura.pid", 'w') {|f| f.write(pid) }
 end
