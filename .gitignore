@@ -1,0 +1,8 @@
+sparsemapcontent/
+solr/
+nakamura/
+3akai-ux/
+sling/
+activemq-data/
+.nakamura.pid
+derby.log
