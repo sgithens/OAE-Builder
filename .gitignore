@@ -3,3 +3,4 @@ store/
 activemq-data/
 .nakamura.pid
 derby.log
+.bundle/

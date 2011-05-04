@@ -1,8 +1,12 @@
 ###A Rakefile to manage updating, building and running Sakai OAE###
 
-(Chris Roby edit: Stuart had a directory structure like /opt/OAE-Builder/nakamura, whereas mine is /opt/OAE-Builder/ and /opt/nakamura, so the following line has changed:)
+To get started, you'll need ruby and the bundle gem installed. Inside your OAE-Builder directory, simply run
 
-To use it copy your sparsemapcontent, solr, and nakamura (and load if you'd like) directories as siblings of the OAE-Builder directory.
+> bundle install
+
+and you'll have all the gems you need to run this.
+
+Make sure your sparsemapcontent, solr, and nakamura directories are siblings of the OAE-Builder directory.
 
 Then just run 
 

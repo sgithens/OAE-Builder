@@ -1,8 +1,8 @@
 require 'rubygems'
-require 'git'
+require 'bundler/setup'
+Bundler.require(:default)
 require 'net/http'
 require 'uri'
-require 'curb'
 
 projects = [{"path" => "../sparsemapcontent"},
   {"path" => "../solr"},

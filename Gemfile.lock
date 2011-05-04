@@ -1,0 +1,11 @@
+GEM
+  specs:
+    curb (0.7.15)
+    git (1.2.5)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  curb
+  git
