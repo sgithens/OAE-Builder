@@ -20,9 +20,7 @@ task :clean do
 end
 
 task :cleanui do
-  if File.directory? "#{UI}/target"
-    rm_r "#{UI}/target"
-  end
+  system("cd #{UI} && mvn clean")
 end
 
 task :update do
