@@ -6,7 +6,7 @@ require 'curb'
 
 projects = [{"path" => "../sparsemapcontent"},
   {"path" => "../solr"},
-  {"path" => "../nakamura", "remote" => "sakai"}]
+  {"path" => "../nakamura", "remote" => "sakaiproject"}]
 
 UI = "../3akai-ux"
 
