@@ -5,6 +5,5 @@ nakamura/
 sling/
 store/
 activemq-data/
-load/
 .nakamura.pid
 derby.log
