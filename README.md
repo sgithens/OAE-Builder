@@ -33,3 +33,7 @@ There are other handy targets, like:
 * To clean up the sling, store, etc directories
 
 > rake clean
+
+* To create some test users, connections, and groups, and set up your fsresource
+
+> rake setup
