@@ -27,7 +27,7 @@ task :update do
   for p in projects do
     g = Git.open(p["path"])
     remote = p["remote"] || "origin"
-    branch = p["branch"] || "master"
+    branch = remote + "/" + (p["branch"] || "master")
     puts g.pull(remote, branch)
   end
 end
