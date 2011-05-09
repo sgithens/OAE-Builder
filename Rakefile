@@ -14,7 +14,7 @@ JAVA_OPTS = "-Xms256m -Xmx1024m -XX:PermSize=64m -XX:MaxPermSize=512m"
 
 CLEAN_FILES = ["./derby.log", "./sling", "./activemq-data", "./store"]
 
-task :clean do
+task :clean => [:kill] do
   touch CLEAN_FILES
   rm_r CLEAN_FILES
 end
