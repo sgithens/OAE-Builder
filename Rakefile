@@ -7,11 +7,9 @@ require 'uri'
 # read in and evaluate an external settings file
 eval File.open('settings.rb').read if File.exists?('settings.rb')
 
-if !defined? projects then
-  projects = [{"path" => "../sparsemapcontent"},
-    {"path" => "../solr"},
-    {"path" => "../nakamura", "remote" => "sakaiproject"}]
-end
+projects = [{"path" => "../sparsemapcontent"},
+  {"path" => "../solr"},
+  {"path" => "../nakamura", "remote" => "sakaiproject"}] if projects.nil?
 
 UI = "../3akai-ux"
 
@@ -26,7 +24,7 @@ if !defined? JAVA_DEBUG_OPTS then
   end
 end
 APP_OPTS = "" if !defined? APP_OPTS
-JAVA_CMD = "#{JAVA_EXEC} #{JAVA_OPTS} #{JAVA_DEBUG_OPTS} -jar ../nakamura/app/target/org.sakaiproject.nakamura.app-0.11-SNAPSHOT.jar #{APP_OPTS}" if !defined? JAVA_CMD
+JAVA_CMD = "#{JAVA_EXEC} #{JAVA_OPTS} #{JAVA_DEBUG_OPTS}" if !defined? JAVA_CMD
 
 # setup maven command and options
 MVN_EXEC = "mvn" if !defined? MVN_EXEC
@@ -38,6 +36,7 @@ CLEAN_FILES = ["./derby.log", "./sling", "./activemq-data", "./store"]
 
 puts "Using settings:"
 puts "JAVA: #{JAVA_CMD}"
+puts "MVN:  #{MVN_CMD}"
 p projects
 
 # include external rake file for custom tasks
@@ -73,7 +72,18 @@ task :fastrebuild do
 end
 
 task :run => [:kill] do
-  pid = fork { exec(JAVA_CMD) }
+  app_file = nil
+  Dir["../nakamura/app/target/org.sakaiproject.nakamura.app-*.jar"].each do |path|
+    if !path.end_with? "-sources.jar" then
+      app_file = path
+    end
+  end
+  abort("Unable to find application version") if app_file.nil?
+
+  CMD = "#{JAVA_CMD} -jar #{app_file} #{APP_OPTS}"
+  p "Starting server with #{CMD}"
+
+  pid = fork { exec( CMD ) }
   Process.detach(pid)
   File.open(".nakamura.pid", 'w') {|f| f.write(pid) }
 end
