@@ -4,15 +4,42 @@ Bundler.require(:default)
 require 'net/http'
 require 'uri'
 
+# read in and evaluate an external settings file
+eval File.open('settings.rb').read if File.exists?('settings.rb')
+
 projects = [{"path" => "../sparsemapcontent"},
   {"path" => "../solr"},
-  {"path" => "../nakamura", "remote" => "sakaiproject"}]
+  {"path" => "../nakamura", "remote" => "sakaiproject"}] if !defined? projects
 
 UI = "../3akai-ux"
 
-JAVA_OPTS = "-Xms256m -Xmx1024m -XX:PermSize=64m -XX:MaxPermSize=512m"
+# setup java command and options
+JAVA_EXEC = "java" if !defined? JAVA_EXEC
+JAVA_OPTS = "-Xms256m -Xmx1024m -XX:PermSize=64m -XX:MaxPermSize=512m" if !defined? JAVA_OPTS
+if !defined? JAVA_DEBUG_OPTS then
+  if defined? JAVA_DEBUG and JAVA_DEBUG then
+    JAVA_DEBUG_OPTS = "-Xdebug -Xrunjdwp:transport=dt_socket,address=8500,server=y,suspend=n"
+  else
+    JAVA_DEBUG_OPTS = ""
+  end
+end
+APP_OPTS = "" if !defined? APP_OPTS
+JAVA_CMD = "#{JAVA_EXEC} #{JAVA_OPTS} #{JAVA_DEBUG_OPTS} -jar ../nakamura/app/target/org.sakaiproject.nakamura.app-0.11-SNAPSHOT.jar #{APP_OPTS}" if !defined? JAVA_CMD
+
+# setup maven command and options
+MVN_EXEC = "mvn" if !defined? MVN_EXEC
+MVN_GOALS = "clean install" if !defined? MVN_GOALS
+MVN_OPTS = "-Dmaven.test.skip" if !defined? MVN_OPTS
+MVN_CMD = "#{MVN_EXEC} #{MVN_GOALS} #{MVN_OPTS}"if !defined? MVN_CMD
 
 CLEAN_FILES = ["./derby.log", "./sling", "./activemq-data", "./store"]
+
+puts "Using settings:"
+puts "JAVA: #{JAVA_CMD}"
+p projects
+
+# include external rake file for custom tasks
+Dir.glob('*.rake').each { |r| import r }
 
 task :clean => [:kill] do
   touch CLEAN_FILES
@@ -20,7 +47,7 @@ task :clean => [:kill] do
 end
 
 task :cleanui do
-  system("cd #{UI} && mvn clean")
+  system("cd #{UI} && #{MVN_EXEC} clean")
 end
 
 task :update do
@@ -33,18 +60,18 @@ task :update do
 end
 
 task :rebuild do
-  system("cd #{UI} && mvn clean install")
+  system("cd #{UI} && #{MVN_EXEC} clean install")
   for p in projects do
-    system("cd #{p["path"]} && mvn clean install -Dmaven.test.skip")
+    system("cd #{p["path"]} && #{MVN_CMD}")
   end
 end
 
 task :fastrebuild do
-  system("cd ../nakamura/app && mvn clean install -Dmaven.test.skip")
+  system("cd ../nakamura/app && #{MVN_CMD}")
 end
 
 task :run => [:kill] do
-  pid = fork{exec("java #{JAVA_OPTS} -jar ../nakamura/app/target/org.sakaiproject.nakamura.app-0.11-SNAPSHOT.jar")}
+  pid = fork { exec(JAVA_CMD) }
   Process.detach(pid)
   File.open(".nakamura.pid", 'w') {|f| f.write(pid) }
 end
@@ -55,13 +82,18 @@ task :kill do
     File.open(pidfile, "r") do |f|
       while (line = f.gets) do
         pid = line.to_i
-        Process.kill("HUP", pid)
-        while (sleep 5) do
-          begin
-            Process.getpgid(pid)
-          rescue
-            break
+        begin
+          Process.kill("TERM", pid)
+          puts "Killing pid #{pid}"
+          while (sleep 5) do
+            begin
+              Process.getpgid(pid)
+            rescue
+              break
+            end
           end
+        rescue
+          puts "Didn't find pid #{pid}"
         end
       end
     end
