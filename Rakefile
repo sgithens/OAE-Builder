@@ -72,15 +72,15 @@ task :fastrebuild do
 end
 
 task :run => [:kill] do
+  app_file = nil
   Dir["../nakamura/app/target/org.sakaiproject.nakamura.app-*.jar"].each do |path|
     if !path.end_with? "-sources.jar" then
-      /.*\.app-(.*)\.jar/ =~ path
-      APP_VERSION = Regexp.last_match(1)
+      app_file = path
     end
   end
-  p "Unable to find application version" && exit if !defined? APP_VERSION
+  abort("Unable to find application version") if app_file.nil?
 
-  CMD = "#{JAVA_CMD} -jar ../nakamura/app/target/org.sakaiproject.nakamura.app-#{APP_VERSION}.jar #{APP_OPTS}"
+  CMD = "#{JAVA_CMD} -jar #{app_file} #{APP_OPTS}"
   p "Starting server with #{CMD}"
 
   pid = fork { exec( CMD ) }
