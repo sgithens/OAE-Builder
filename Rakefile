@@ -12,7 +12,6 @@ projects = [{"path" => "../sparsemapcontent"},
   {"path" => "../nakamura", "remote" => "sakaiproject"}] if projects.nil?
 
 UI = "../3akai-ux"
-APP_VERSION = "0.11-SNAPSHOT" if !defined? APP_VERSION
 
 # setup java command and options
 JAVA_EXEC = "java" if !defined? JAVA_EXEC
@@ -25,7 +24,7 @@ if !defined? JAVA_DEBUG_OPTS then
   end
 end
 APP_OPTS = "" if !defined? APP_OPTS
-JAVA_CMD = "#{JAVA_EXEC} #{JAVA_OPTS} #{JAVA_DEBUG_OPTS} -jar ../nakamura/app/target/org.sakaiproject.nakamura.app-#{APP_VERSION}.jar #{APP_OPTS}" if !defined? JAVA_CMD
+JAVA_CMD = "#{JAVA_EXEC} #{JAVA_OPTS} #{JAVA_DEBUG_OPTS}" if !defined? JAVA_CMD
 
 # setup maven command and options
 MVN_EXEC = "mvn" if !defined? MVN_EXEC
@@ -73,7 +72,18 @@ task :fastrebuild do
 end
 
 task :run => [:kill] do
-  pid = fork { exec(JAVA_CMD) }
+  Dir["../nakamura/app/target/org.sakaiproject.nakamura.app-*.jar"].each do |path|
+    if !path.end_with? "-sources.jar" then
+      /.*\.app-(.*)\.jar/ =~ path
+      APP_VERSION = Regexp.last_match(1)
+    end
+  end
+  p "Unable to find application version" && exit if !defined? APP_VERSION
+
+  CMD = "#{JAVA_CMD} -jar ../nakamura/app/target/org.sakaiproject.nakamura.app-#{APP_VERSION}.jar #{APP_OPTS}"
+  p "Starting server with #{CMD}"
+
+  pid = fork { exec( CMD ) }
   Process.detach(pid)
   File.open(".nakamura.pid", 'w') {|f| f.write(pid) }
 end
