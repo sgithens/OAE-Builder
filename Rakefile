@@ -7,11 +7,9 @@ require 'uri'
 # read in and evaluate an external settings file
 eval File.open('settings.rb').read if File.exists?('settings.rb')
 
-if !defined? projects then
-  projects = [{"path" => "../sparsemapcontent"},
-    {"path" => "../solr"},
-    {"path" => "../nakamura", "remote" => "sakaiproject"}]
-end
+projects = [{"path" => "../sparsemapcontent"},
+  {"path" => "../solr"},
+  {"path" => "../nakamura", "remote" => "sakaiproject"}] if projects.nil?
 
 UI = "../3akai-ux"
 APP_VERSION = "0.11-SNAPSHOT" if !defined? APP_VERSION
