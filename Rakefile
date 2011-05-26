@@ -244,6 +244,47 @@ task :creategroups => [:setuprequests] do
   end
 end
 
+task :sendmessages => [:setuprequests] do
+  5.times do |i|
+    i += 1
+    nextuser = i % 5 + 1
+
+    puts "Creating message: user#{i} => user#{nextuser}"
+    req = Net::HTTP::Post.new("/~user#{i}/message.create.html")
+    req.set_form_data({
+      "_charset_" => "utf-8",
+      "sakai:body" => "test body #{i} => #{nextuser}",
+      "sakai:category" => "message",
+      "sakai:from" => "user#{i}",
+      "sakai:messagebox" => "outbox",
+      "sakai:sendstate" => "pending",
+      "sakai:subject" => "test #{i} => #{nextuser}",
+      "sakai:to" => "internal:user#{nextuser}",
+      "sakai:type" => "internal"
+    })
+    req.basic_auth("user#{i}", "test")
+    response = @localinstance.request(req)
+    puts response
+
+    puts "Creating message: user#{nextuser} => user#{i}"
+    req = Net::HTTP::Post.new("/~user#{nextuser}/message.create.html")
+    req.set_form_data({
+      "_charset_" => "utf-8",
+      "sakai:body" => "test body #{nextuser} => #{i}",
+      "sakai:category" => "message",
+      "sakai:from" => "user#{nextuser}",
+      "sakai:messagebox" => "outbox",
+      "sakai:sendstate" => "pending",
+      "sakai:subject" => "test #{nextuser} => #{i}",
+      "sakai:to" => "internal:user#{i}",
+      "sakai:type" => "internal"
+    })
+    req.basic_auth("user#{nextuser}", "test")
+    response = @localinstance.request(req)
+    puts response
+  end
+end
+
 task :build => [:update, :rebuild]
-task :setup => [:createusers, :creategroups, :makeconnections, :setfsresource, :cleanui]
+task :setup => [:createusers, :creategroups, :makeconnections, :sendmessages, :setfsresource, :cleanui]
 task :default => [:clean, :build, :run]
