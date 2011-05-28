@@ -3,6 +3,7 @@ require 'bundler/setup'
 Bundler.require(:default)
 require 'net/http'
 require 'uri'
+require 'messaging'
 
 # read in and evaluate an external settings file
 eval File.open('settings.rb').read if File.exists?('settings.rb')
@@ -12,6 +13,8 @@ nakamura = [{"path" => "../sparsemapcontent"},
   {"path" => "../nakamura", "remote" => "sakaiproject"}] if nakamura.nil?
 
 ui = {"path" => "../3akai-ux"} if ui.nil?
+
+num_users_groups = 5
 
 # setup java command and options
 JAVA_EXEC = "java" if !defined? JAVA_EXEC
@@ -58,12 +61,14 @@ task :update do
   g = Git.open(ui["path"])
   remote = ui["remote"] || "origin"
   branch = remote + "/" + (ui["branch"] || "master")
+  puts "Updating #{ui["path"]}:#{remote}/#{branch}"
   puts g.pull(remote, branch)
 
   for p in nakamura do
     g = Git.open(p["path"])
     remote = p["remote"] || "origin"
     branch = remote + "/" + (p["branch"] || "master")
+    puts "Updating #{p["path"]}:#{remote}/#{branch}"
     puts g.pull(remote, branch)
   end
 end
@@ -171,9 +176,9 @@ task :setuprequests do
   @localinstance = Net::HTTP.new(@uri.host, @uri.port)
 end
 
-desc "Create 5 users."
+desc "Create #{num_users_groups} users."
 task :createusers => [:setuprequests] do
-  5.times do |i|
+  num_users_groups.times do |i|
     i = i+1
     puts "Creating User #{i}"
     req = Net::HTTP::Post.new("/system/userManager/user.create.html")
@@ -198,9 +203,9 @@ end
 
 desc "Make connections between each user and the next sequential user id."
 task :makeconnections => [:setuprequests] do
-  5.times do |i|
+  num_users_groups.times do |i|
     i = i+1
-    nextuser = i%5+1
+    nextuser = i % num_users_groups + 1
 
     puts "Requesting connection between User #{i} and User #{nextuser}"
     req = Net::HTTP::Post.new("/~user#{i}/contacts.invite.html")
@@ -225,9 +230,9 @@ task :makeconnections => [:setuprequests] do
   end
 end
 
-desc "Create 5 groups. Each is created by the user with the matching id."
+desc "Create #{num_users_groups} groups. Each is created by the user with the matching id."
 task :creategroups => [:setuprequests] do
-  5.times do |i|
+  num_users_groups.times do |i|
     i = i+1
     puts "Creating Group #{i}"
     req = Net::HTTP::Post.new("/system/userManager/group.create.html")
@@ -262,43 +267,21 @@ end
 
 desc "Send messages between users."
 task :sendmessages => [:setuprequests] do
-  5.times do |i|
+  num_users_groups.times do |i|
     i += 1
-    nextuser = i % 5 + 1
+    nextuser = i % num_users_groups + 1
 
-    puts "Creating message: user#{i} => user#{nextuser}"
-    req = Net::HTTP::Post.new("/~user#{i}/message.create.html")
-    req.set_form_data({
-      "_charset_" => "utf-8",
-      "sakai:body" => "test body #{i} => #{nextuser}",
-      "sakai:category" => "message",
-      "sakai:from" => "user#{i}",
-      "sakai:messagebox" => "outbox",
-      "sakai:sendstate" => "pending",
-      "sakai:subject" => "test #{i} => #{nextuser}",
-      "sakai:to" => "internal:user#{nextuser}",
-      "sakai:type" => "internal"
-    })
-    req.basic_auth("user#{i}", "test")
-    response = @localinstance.request(req)
-    puts response
+    puts "Sending internal message: user#{i} => user#{nextuser}"
+    puts send_internal_message "user#{i}", "user#{nextuser}", "test #{i} => #{nextuser}", "test body #{i} => #{nextuser}"
 
-    puts "Creating message: user#{nextuser} => user#{i}"
-    req = Net::HTTP::Post.new("/~user#{nextuser}/message.create.html")
-    req.set_form_data({
-      "_charset_" => "utf-8",
-      "sakai:body" => "test body #{nextuser} => #{i}",
-      "sakai:category" => "message",
-      "sakai:from" => "user#{nextuser}",
-      "sakai:messagebox" => "outbox",
-      "sakai:sendstate" => "pending",
-      "sakai:subject" => "test #{nextuser} => #{i}",
-      "sakai:to" => "internal:user#{i}",
-      "sakai:type" => "internal"
-    })
-    req.basic_auth("user#{nextuser}", "test")
-    response = @localinstance.request(req)
-    puts response
+    puts "Sending smtp message: user#{i} => user#{nextuser}"
+    puts send_smtp_message "user#{i}", "user#{nextuser}", "test #{i} => #{nextuser}", "test body #{i} => #{nextuser}"
+
+    puts "Sending internal message: user#{nextuser} => user#{i}"
+    puts send_internal_message "user#{nextuser}", "user#{i}", "test #{nextuser} => #{i}", "test body #{nextuser} => #{i}"
+
+    puts "Sending smtp message: user#{nextuser} => user#{i}"
+    puts send_smtp_message "user#{nextuser}", "user#{i}", "test #{nextuser} => #{i}", "test body #{nextuser} => #{i}"
   end
 end
 
@@ -310,3 +293,4 @@ task :setup => [:createusers, :creategroups, :makeconnections, :sendmessages, :s
 
 desc "Clean, build and run"
 task :default => [:clean, :build, :run]
+
