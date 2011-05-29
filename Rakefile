@@ -8,11 +8,11 @@ require 'messaging'
 # read in and evaluate an external settings file
 eval File.open('settings.rb').read if File.exists?('settings.rb')
 
-nakamura = [{"path" => "../sparsemapcontent"},
-  {"path" => "../solr"},
-  {"path" => "../nakamura", "remote" => "sakaiproject"}] if nakamura.nil?
+nakamura = [{"path" => "../sparsemapcontent", "repository" => "https://github.com/ieb/sparsemapcontent.git"},
+  {"path" => "../solr", "repository" => "https://github.com/ieb/solr.git"},
+  {"path" => "../nakamura", "remote" => "sakaiproject", "repository" => "https://github.com/sakaiproject/nakamura.git"}] if nakamura.nil?
 
-ui = {"path" => "../3akai-ux"} if ui.nil?
+ui = {"path" => "../3akai-ux", "repository" => "https://github.com/sakaiproject/3akai-ux.git"} if ui.nil?
 
 num_users_groups = 5
 
@@ -41,9 +41,51 @@ puts "JAVA: #{JAVA_CMD}"
 puts "MVN:  #{MVN_CMD}"
 p ui
 p nakamura
+puts ""
 
 # include external rake file for custom tasks
 Dir.glob('*.rake').each { |r| import r }
+
+########################
+##  Task Definitions  ##
+########################
+desc "Clone the repositories needed to build everything."
+task :clone do
+  cmds = []
+  if ui.has_key? "path"
+    if File.directory? ui["path"]
+      puts "#{ui["path"]} already exists."
+    elsif ui.has_key? "repository"
+      puts "Cloning #{ui["repository"]} to #{ui["path"]}"
+      Git.clone(ui["repository"], ui["path"])
+      if ui.has_key? "remote" and ui["remote"] != "origin"
+        cmds << "cd #{ui["path"]} && git remote rename origin #{ui["remote"]}" 
+      end
+    end
+  end
+
+  for p in nakamura
+    if p.has_key? "path"
+      if File.directory? p["path"]
+        puts "#{p["path"]} already exists."
+      elsif p.has_key? "repository"
+        puts "Cloning #{p["repository"]} to #{p["path"]}"
+        Git.clone(p["repository"], p["path"])
+        if p.has_key? "remote" and ui["remote"] != "origin"
+          cmds << "cd #{p["path"]} && git remote rename origin #{p["remote"]}" 
+        end
+      end
+    end
+  end
+
+  if !cmds.empty?
+    puts "\nPlease issue the following commands:"
+    cmds.each do |cmd|
+      puts cmd
+    end
+    puts ""
+  end
+end
 
 desc "Clean files and directories from a previous server start."
 task :clean => [:kill] do
