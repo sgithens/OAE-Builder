@@ -59,7 +59,7 @@ task :clone do
       puts "Cloning #{ui["repository"]} to #{ui["path"]}"
       Git.clone(ui["repository"], ui["path"])
       if ui.has_key? "remote" and ui["remote"] != "origin"
-        cmds << "cd #{ui["path"]} && git remote rename origin #{ui["remote"]}" 
+        cmds << "(cd #{ui["path"]} && git remote rename origin #{ui["remote"]})"
       end
     end
   end
@@ -72,7 +72,7 @@ task :clone do
         puts "Cloning #{p["repository"]} to #{p["path"]}"
         Git.clone(p["repository"], p["path"])
         if p.has_key? "remote" and ui["remote"] != "origin"
-          cmds << "cd #{p["path"]} && git remote rename origin #{p["remote"]}" 
+          cmds << "(cd #{p["path"]} && git remote rename origin #{p["remote"]})"
         end
       end
     end
