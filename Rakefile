@@ -98,6 +98,10 @@ task :cleanui do
   system("cd #{ui["path"]} && #{MVN_CMD} clean")
 end
 
+desc "[Alias to :update] Update (git pull) all nakamur and ui projects."
+task :up => :update do
+end
+
 desc "Update (git pull) all nakamura and ui projects."
 task :update do
   g = Git.open(ui["path"])
