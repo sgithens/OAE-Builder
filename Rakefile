@@ -103,14 +103,14 @@ task :update do
   g = Git.open(ui["path"])
   remote = ui["remote"] || "origin"
   branch = remote + "/" + (ui["branch"] || "master")
-  puts "Updating #{ui["path"]}:#{remote}/#{branch}"
+  puts "Updating #{ui["path"]}:#{branch}"
   puts g.pull(remote, branch)
 
   for p in nakamura do
     g = Git.open(p["path"])
     remote = p["remote"] || "origin"
     branch = remote + "/" + (p["branch"] || "master")
-    puts "Updating #{p["path"]}:#{remote}/#{branch}"
+    puts "Updating #{p["path"]}:#{branch}"
     puts g.pull(remote, branch)
   end
 end
@@ -235,7 +235,7 @@ task :createusers => [:setuprequests] do
       "locale" => "en_US",
       "timezone" => "America/Los_Angeles",
       "_charset_" => "utf-8",
-      "sakai:profile-import" => "{'basic': {'access': 'everybody', 'elements': {'email': {'value': 'user#{i}@sakaiproject.invalid'}, 'firstName': {'value': 'User'}, 'lastName': {'value': '#{i}'}}}}"
+      ":sakai:profile-import" => "{'basic': {'access': 'everybody', 'elements': {'email': {'value': 'user#{i}@sakaiproject.invalid'}, 'firstName': {'value': 'User'}, 'lastName': {'value': '#{i}'}}}}"
     })
     req.basic_auth("admin", "admin")
     response = @localinstance.request(req)
