@@ -331,6 +331,21 @@ task :sendmessages => [:setuprequests] do
   end
 end
 
+desc "Check the status of the last known running server."
+task :status do
+  File.open('.nakamura.pid', 'r') do |f|
+    while (line = f.gets) do
+      pid = line.to_i
+      begin
+        Process.kill 0, pid
+        puts "pid [#{pid}] is still running."
+      rescue
+        puts "pid [#{pid}] is no longer valid."
+      end
+    end
+  end
+end
+
 desc "Update and rebuild the ui and nakamura projects."
 task :build => [:update, :rebuild]
 
