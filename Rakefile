@@ -14,7 +14,7 @@ nakamura = [{"path" => "../sparsemapcontent", "repository" => "https://github.co
 
 ui = {"path" => "../3akai-ux", "repository" => "https://github.com/sakaiproject/3akai-ux.git"} if ui.nil?
 
-num_users_groups = 5
+num_users_groups = 5 if num_users_groups.nil?
 
 # setup java command and options
 JAVA_EXEC = "java" if !defined? JAVA_EXEC
