@@ -331,18 +331,26 @@ task :sendmessages => [:setuprequests] do
   end
 end
 
+desc "[Alias to :status] Check the status of the last known running server."
+task :stat => :status do
+end
+
 desc "Check the status of the last known running server."
 task :status do
-  File.open('.nakamura.pid', 'r') do |f|
-    while (line = f.gets) do
-      pid = line.to_i
-      begin
-        Process.kill 0, pid
-        puts "pid [#{pid}] is still running."
-      rescue
-        puts "pid [#{pid}] is no longer valid."
+  if File.exists? '.nakamura.pid'
+    File.open('.nakamura.pid', 'r') do |f|
+      while (line = f.gets) do
+        pid = line.to_i
+        begin
+          Process.kill 0, pid
+          puts "pid [#{pid}] is still running."
+        rescue
+          puts "pid [#{pid}] is no longer valid."
+        end
       end
     end
+  else
+    puts ".nakamua.pid doesn't exist."
   end
 end
 
