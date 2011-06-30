@@ -15,6 +15,7 @@ nakamura = [{"path" => "../sparsemapcontent", "repository" => "https://github.co
 ui = {"path" => "../3akai-ux", "repository" => "https://github.com/sakaiproject/3akai-ux.git"} if ui.nil?
 
 num_users_groups = 5 if num_users_groups.nil?
+update_ui = true if update_ui.nil?
 
 # setup java command and options
 JAVA_EXEC = "java" if !defined? JAVA_EXEC
@@ -100,11 +101,13 @@ end
 
 desc "[Alias to :update] Update (git pull) all Nakamura and UI projects."
 task :update do
-  g = Git.open(ui["path"])
-  remote = ui["remote"] || "origin"
-  branch = remote + "/" + (ui["branch"] || "master")
-  puts "Updating #{ui["path"]}:#{branch}"
-  # puts g.pull(remote, branch)
+  if update_ui then
+    g = Git.open(ui["path"])
+    remote = ui["remote"] || "origin"
+    branch = remote + "/" + (ui["branch"] || "master")
+    puts "Updating #{ui["path"]}:#{branch}"
+    puts g.pull(remote, branch)
+  end
 
   for p in nakamura do
     g = Git.open(p["path"])
