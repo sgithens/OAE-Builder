@@ -237,7 +237,6 @@ task :createusers => [:setuprequests] do
       "pwd" => "test",
       "pwdConfirm" => "test",
       "email" => "user#{i}@sakaiproject.invalid",
-      ":sakai:pages-template" => "/var/templates/site/defaultuser",
       "firstName" => "User",
       "lastName" => "#{i}",
       "locale" => "en_US",
