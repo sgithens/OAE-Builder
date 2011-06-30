@@ -429,7 +429,7 @@ desc "Update and rebuild the UI and Nakamura projects."
 task :build => [:update, :rebuild]
 
 desc "Create users, greate groups, make connections, send messages, set FSResource, clean the UI"
-task :setup => [:createusers, :creategroups, :makeconnections, :sendmessages, :setfsresource, :cleanui]
+task :setup => [:createusers, :makeconnections, :sendmessages, :setfsresource, :cleanui]
 
 desc "Create a release build of the UI, regular build of everything else, and run it."
 task :release => [:clean, :update, :release_build, :run]
