@@ -8,9 +8,11 @@ require './messaging'
 # read in and evaluate an external settings file
 eval File.open('settings.rb').read if File.exists?('settings.rb')
 
-nakamura = [{"path" => "../sparsemapcontent", "repository" => "https://github.com/ieb/sparsemapcontent.git"},
-  {"path" => "../solr", "repository" => "https://github.com/ieb/solr.git"},
-  {"path" => "../nakamura", "remote" => "sakaiproject", "repository" => "https://github.com/sakaiproject/nakamura.git"}] if nakamura.nil?
+sparse = {"path" => "../sparsemapcontent", "repository" => "https://github.com/ieb/sparsemapcontent.git"} if sparse.nil?
+solr = {"path" => "../solr", "repository" => "https://github.com/ieb/solr.git"} if solr.nil?
+nakamura = {"path" => "../nakamura", "remote" => "sakaiproject", "repository" => "https://github.com/sakaiproject/nakamura.git"} if nakamura.nil?
+
+server = [sparse, solr, nakamura] if server.nil?
 
 ui = {"path" => "../3akai-ux", "repository" => "https://github.com/sakaiproject/3akai-ux.git"} if ui.nil?
 
@@ -41,7 +43,7 @@ puts "Using settings:"
 puts "JAVA: #{JAVA_CMD}"
 puts "MVN:  #{MVN_CMD}"
 p ui
-p nakamura
+p server
 puts ""
 
 # include external rake file for custom tasks
@@ -65,7 +67,7 @@ task :clone do
     end
   end
 
-  for p in nakamura
+  for p in server
     if p.has_key? "path"
       if File.directory? p["path"]
         puts "#{p["path"]} already exists."
@@ -109,7 +111,7 @@ task :update do
     puts g.pull(remote, branch)
   end
 
-  for p in nakamura do
+  for p in server do
     g = Git.open(p["path"])
     remote = p["remote"] || "origin"
     branch = remote + "/" + (p["branch"] || "master")
@@ -121,15 +123,20 @@ end
 desc "Rebuild the UI and Nakamura projects, using a release build for the UI."
 task :release_build do
   system("cd #{ui["path"]} && #{MVN_CMD} clean install -P sakai-release")
-  for p in nakamura do
+  for p in server do
     system("cd #{p["path"]} && #{MVN_CMD} clean install")
   end
+end
+
+desc "Build the UI and Nakamura projects, make a webstart"
+task :webstart => [:rebuild] do
+  system("cd #{nakamura["path"]}/webstart && #{MVN_CMD} clean install")
 end
 
 desc "Rebuild the UI and Nakamura projects."
 task :rebuild do
   system("cd #{ui["path"]} && #{MVN_CMD} clean install")
-  for p in nakamura do
+  for p in server do
     system("cd #{p["path"]} && #{MVN_CMD} clean install")
   end
 end
