@@ -4,3 +4,4 @@ activemq-data/
 .nakamura.pid
 derby.log
 .bundle/
+load/org.sakaiproject.nakamura.proxy.*
