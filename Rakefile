@@ -102,6 +102,10 @@ task :cleanui do
 end
 
 desc "[Alias to :update] Update (git pull) all Nakamura and UI projects."
+task :up => :update do
+end
+
+desc "Update (git pull) all Nakamura and UI projects."
 task :update do
   if update_ui then
     g = Git.open(ui["path"])
