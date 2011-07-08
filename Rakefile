@@ -9,10 +9,9 @@ require './messaging'
 eval File.open('settings.rb').read if File.exists?('settings.rb')
 
 sparse = {"path" => "../sparsemapcontent", "repository" => "https://github.com/ieb/sparsemapcontent.git"} if sparse.nil?
-solr = {"path" => "../solr", "repository" => "https://github.com/ieb/solr.git"} if solr.nil?
 nakamura = {"path" => "../nakamura", "remote" => "sakaiproject", "repository" => "https://github.com/sakaiproject/nakamura.git"} if nakamura.nil?
 
-server = [sparse, solr, nakamura] if server.nil?
+server = [sparse, nakamura] if server.nil?
 
 ui = {"path" => "../3akai-ux", "repository" => "https://github.com/sakaiproject/3akai-ux.git"} if ui.nil?
 
