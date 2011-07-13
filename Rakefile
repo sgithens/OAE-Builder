@@ -342,7 +342,6 @@ task :creategroups => [:setuprequests] do
     req = Net::HTTP::Post.new("/system/userManager/group.create.html")
     req.set_form_data({
       ":name" => "group#{i}",
-      ":sakai:pages-template" => "/var/templates/site/defaultgroup",
       ":sakai:manager" => "user#{i}",
       "sakai:group-title" => "Group #{i}",
       "sakai:group-description" => "Group #{i} description",
@@ -377,7 +376,6 @@ task :createjoinablegroups => [:setuprequests] do
     req = Net::HTTP::Post.new("/system/userManager/group.create.html")
     req.set_form_data({
       ":name" => "groupjoinable#{i}",
-      ":sakai:pages-template" => "/var/templates/site/defaultgroup",
       ":sakai:manager" => "user#{i}",
       "sakai:group-title" => "Group Joinable #{i}",
       "sakai:group-description" => "Group Joinable #{i} description",
