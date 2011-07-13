@@ -100,7 +100,7 @@ task :cleanui do
   system("cd #{ui["path"]} && #{MVN_CMD} clean")
 end
 
-desc "[Alias to :update] Update (git pull) all Nakamura and UI projects."
+desc "[Alias to :update]"
 task :up => :update do
 end
 
@@ -149,6 +149,10 @@ task :fastrebuild do
   system("cd ../nakamura/app && #{MVN_CMD} clean install")
 end
 
+desc "[Alias to :run]"
+task :start => :run do
+end
+
 desc "Start a running server. Will kill the previously started server if still running."
 task :run => [:kill] do
   app_file = nil
@@ -165,6 +169,10 @@ task :run => [:kill] do
   pid = fork { exec( CMD ) }
   Process.detach(pid)
   File.open(".nakamura.pid", 'w') {|f| f.write(pid) }
+end
+
+desc "[Alias to :kill]"
+task :stop => :kill do
 end
 
 desc "Kill the previously started server."
@@ -415,7 +423,7 @@ task :sendmessages => [:setuprequests] do
   end
 end
 
-desc "[Alias to :status] Check the status of the last known running server."
+desc "[Alias to :status]"
 task :stat => :status do
 end
 
