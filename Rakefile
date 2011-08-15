@@ -32,6 +32,9 @@ end
 APP_OPTS = "" if !defined? APP_OPTS
 JAVA_CMD = "#{JAVA_EXEC} #{JAVA_OPTS} #{JAVA_DEBUG_OPTS}" if !defined? JAVA_CMD
 
+# Custom app jar file pattern
+APP_FILE = "../nakamura/app/target/org.sakaiproject.nakamura.app-*.jar" if !defined? APP_FILE
+
 # setup maven command and options
 MVN_EXEC = "mvn" if !defined? MVN_EXEC
 MVN_OPTS = "-Dmaven.test.skip" if !defined? MVN_OPTS
@@ -153,7 +156,7 @@ end
 desc "Start a running server. Will kill the previously started server if still running."
 task :run => [:kill] do
   app_file = nil
-  Dir["../nakamura/app/target/org.sakaiproject.nakamura.app-*.jar"].each do |path|
+  Dir[APP_FILE].each do |path|
     if !path.end_with? "-sources.jar" then
       app_file = path
     end
