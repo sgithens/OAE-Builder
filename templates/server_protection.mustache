@@ -1,0 +1,10 @@
+service.pid="org.sakaiproject.nakamura.http.usercontent.ServerProtectionServiceImpl"
+trusted.paths=["/dev","/devwidgets","/system"]
+trusted.postwhitelist=["/system/console"]
+trusted.exact.paths=["/","/index.html"]
+trusted.anonpostwhitelist=["/system/userManager/user.create","/system/batch"]
+disable.protection.for.dev.mode=B"false"
+trusted.secret="shhhhh"
+untrusted.contenturl="http://{{server}}:8082"
+trusted.hosts=["http://{{server}}:{{httpd_port}}"]
+trusted.referer=["/","http://{{server}}:{{httpd_port}}"]

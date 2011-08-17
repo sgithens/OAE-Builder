@@ -1,0 +1,31 @@
+ui.service = {{s2_tag}} + {{hybrid_tag}} on HSQLDB
+version.sakai = {{repo_rev}}
+version.service = Built: {{build_date}}
+serverName={{server}}
+webservices.allowlogin=true
+webservice.portalsecret=nightly
+samigo.answerUploadRepositoryPath=/tmp/sakai2-hybrid/
+# enable SAK-17223 NakamuraAuthenticationFilter
+top.login=false
+container.login=true
+org.sakaiproject.login.filter.NakamuraAuthenticationFilter.enabled=true
+org.sakaiproject.login.filter.NakamuraAuthenticationFilter.validateUrl=http://localhost:{{k2_http_port}}/var/cluster/user.cookie.json?c=
+# configure SAK-17222 NakamuraUserDirectoryProvider
+org.sakaiproject.provider.user.NakamuraUserDirectoryProvider.validateUrl=http://localhost:{{k2_http_port}}/var/cluster/user.cookie.json?c=
+x.sakai.token.localhost.sharedSecret=default-setting-change-before-use
+# declare shared secret for trusted login from nakamura
+org.sakaiproject.hybrid.util.TrustedLoginFilter.sharedSecret=e2KS54H35j6vS5Z38nK40
+org.sakaiproject.hybrid.util.TrustedLoginFilter.safeHosts=localhost;127.0.0.1;0:0:0:0:0:0:0:1%0;{{external_ip}}
+# enabled Basic LTI provider
+basiclti.provider.enabled=true
+basiclti.provider.allowedtools=sakai.forums:sakai.messages:sakai.synoptic.messagecenter:sakai.poll:sakai.profile:sakai.profile2:sakai.announcements:sakai.synoptic.announcement:sakai.assignment.grades:sakai.summary.calendar:sakai.schedule:sakai.chat:sakai.dropbox:sakai.resources:sakai.gradebook.tool:sakai.help:sakai.mailbox:sakai.news:sakai.podcasts:sakai.postem:sakai.site.roster:sakai.rwiki:sakai.syllabus:sakai.singleuser:sakai.samigo:sakai.sitestats
+basiclti.provider.12345.secret=secret
+webservices.allow=.+
+# enable debugging for hybrid related code
+log.config.count=6
+log.config.1 = ALL.org.sakaiproject.log.impl
+log.config.2 = WARN.org.sakaiproject
+log.config.3 = DEBUG.org.sakaiproject.provider.user
+log.config.4 = DEBUG.org.sakaiproject.login
+log.config.5 = DEBUG.org.sakaiproject.hybrid
+log.config.6 = DEBUG.org.sakaiproject.blti

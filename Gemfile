@@ -1,3 +1,7 @@
 source :rubygems
 gem "git"
-gem "curb"
+gem "mysql"
+gem "libarchive"
+gem "mustache"
+gem "json"
+gem "rest-client"

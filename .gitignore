@@ -2,7 +2,12 @@ sling/
 store/
 activemq-data/
 .nakamura.pid
+.sakai-cle.pid
 .bundle/
 load/org.sakaiproject.nakamura.proxy.*
 *.log
 settings.rb
+apache-tomcat*.tar.gz
+sakai2-demo/
+tmp/
+ui-conf/

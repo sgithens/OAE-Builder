@@ -1,12 +1,22 @@
 GEM
   remote: http://rubygems.org/
   specs:
-    curb (0.7.15)
     git (1.2.5)
+    json (1.5.3)
+    libarchive (0.1.2)
+    mime-types (1.16)
+    mustache (0.99.4)
+    mysql (2.8.1)
+    rest-client (1.6.3)
+      mime-types (>= 1.16)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  curb
   git
+  json
+  libarchive
+  mustache
+  mysql
+  rest-client
