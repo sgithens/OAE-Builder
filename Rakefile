@@ -8,6 +8,8 @@ require 'fileutils'
 require 'socket'
 require 'rexml/document'
 require 'rexml/xpath'
+require 'zlib'
+require 'archive/tar/minitar'
 
 # Make sure we always start from where the Rakefile is
 Dir.chdir(File.dirname(__FILE__))
@@ -147,8 +149,12 @@ end
 
 desc "Unpack Tomcat tarball"
 task :unpack_tomcat => :dl_tomcat do
-  puts "Unpacking #{tomcat["filename"]} to sakai2-demo"
-  unpack(tomcat["filename"], lambda{|p| p.sub(/^apache-tomcat-#{tomcat["version"]}/, 'sakai2-demo')})
+  puts "Unpacking #{tomcat["filename"]}"
+  Dir.chdir(File.dirname(tomcat["filename"])) do
+    tgz = Zlib::GzipReader.new(File.open(tomcat["filename"], 'rb'))
+    Archive::Tar::Minitar.unpack(tgz, './tmp')
+    FileUtils.mv("./tmp/apache-tomcat-#{tomcat["version"]}", "./sakai2-demo")
+  end
 end
 
 desc "Configure the CLE to use NakamuraUserDirectoryProvider"
@@ -180,27 +186,6 @@ task :config_directoryprovider do #=> [:build_cle] do
   end
 
   FileUtils.rm("sakai2-demo/components/sakai-provider-pack/WEB-INF/components-demo.xml")
-end
-
-def unpack(path, path_transform=lambda{|p| p})
-  Dir.chdir(File.dirname(path)) do
-    Archive.read_open_filename(path) do |archive|
-      while entry = archive.next_header
-        path = path_transform.call(entry.pathname)
-        if entry.directory?
-          FileUtils.mkdir_p path unless File.directory? path
-        elsif entry.symbolic_link?
-          File.symlink(entry.symlink, path)
-        else
-          FileUtils.mkdir_p(File.dirname(path)) unless File.directory? File.dirname(path)
-          File.open(path, 'w+') do |fp|
-            archive.read_data(1024) {|data| fp.write(data)}
-          end
-        end
-        File.chmod(entry.mode, path) unless entry.symbolic_link?
-      end
-    end
-  end
 end
 
 desc "Clean files and directories from a previous server start."

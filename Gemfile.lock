@@ -5,6 +5,7 @@ GEM
     json (1.5.3)
     libarchive (0.1.2)
     mime-types (1.16)
+    minitar (0.5.3)
     mustache (0.99.4)
     mysql (2.8.1)
     rest-client (1.6.3)
@@ -17,6 +18,7 @@ DEPENDENCIES
   git
   json
   libarchive
+  minitar
   mustache
   mysql
   rest-client
