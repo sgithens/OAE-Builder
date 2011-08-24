@@ -210,7 +210,7 @@ task :clean_mysql do
   end
 end
 
-desc "[Alias to :update] Update (git pull) all Nakamura and UI projects."
+desc "[Alias to :update]"
 task :up => :update do
 end
 
@@ -294,6 +294,10 @@ task :rebuild_cle => [:config_cle] do
   end
 end
 
+desc "[Alias to :run]"
+task :start => :run do
+end
+
 desc "Start a running server. Will kill the previously started server if still running."
 task :run => [:kill] do
   app_file = nil
@@ -341,6 +345,10 @@ def kill(pidfile)
     end
     rm pidfile
   end
+end
+
+desc "[Alias to :kill]"
+task :stop => :kill do
 end
 
 desc "Kill the previously started server."
@@ -618,7 +626,6 @@ task :creategroups => [:setuprequests] do
     req = Net::HTTP::Post.new("/system/userManager/group.create.html")
     req.set_form_data({
       ":name" => "group#{i}",
-      ":sakai:pages-template" => "/var/templates/site/defaultgroup",
       ":sakai:manager" => "user#{i}",
       "sakai:group-title" => "Group #{i}",
       "sakai:group-description" => "Group #{i} description",
@@ -653,7 +660,6 @@ task :createjoinablegroups => [:setuprequests] do
     req = Net::HTTP::Post.new("/system/userManager/group.create.html")
     req.set_form_data({
       ":name" => "groupjoinable#{i}",
-      ":sakai:pages-template" => "/var/templates/site/defaultgroup",
       ":sakai:manager" => "user#{i}",
       "sakai:group-title" => "Group Joinable #{i}",
       "sakai:group-description" => "Group Joinable #{i} description",
@@ -700,7 +706,7 @@ task :sendmessages => [:setuprequests] do
   end
 end
 
-desc "[Alias to :status] Check the status of the last known running server."
+desc "[Alias to :status]"
 task :stat => :status do
 end
 
