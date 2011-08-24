@@ -3,7 +3,6 @@ GEM
   specs:
     git (1.2.5)
     json (1.5.3)
-    libarchive (0.1.2)
     mime-types (1.16)
     minitar (0.5.3)
     mustache (0.99.4)
@@ -17,7 +16,6 @@ PLATFORMS
 DEPENDENCIES
   git
   json
-  libarchive
   minitar
   mustache
   mysql
