@@ -4,20 +4,44 @@ Bundler.require(:default)
 require 'net/http'
 require 'uri'
 require './messaging'
+require 'fileutils'
+require 'socket'
+require 'rexml/document'
+require 'rexml/xpath'
+
+# Make sure we always start from where the Rakefile is
+Dir.chdir(File.dirname(__FILE__))
 
 # read in and evaluate an external settings file
 eval File.open('settings.rb').read if File.exists?('settings.rb')
 
 sparse = {"path" => "../sparsemapcontent", "repository" => "https://github.com/ieb/sparsemapcontent.git"} if sparse.nil?
 solr = {"path" => "../solr", "repository" => "https://github.com/ieb/solr.git"} if solr.nil?
-nakamura = {"path" => "../nakamura", "remote" => "sakaiproject", "repository" => "https://github.com/sakaiproject/nakamura.git"} if nakamura.nil?
+nakamura = {"path" => "../nakamura", "remote" => "sakaiproject", "repository" => "https://github.com/sakaiproject/nakamura.git", "port" => "8080" } if nakamura.nil?
 
 server = [sparse, solr, nakamura] if server.nil?
 
 ui = {"path" => "../3akai-ux", "repository" => "https://github.com/sakaiproject/3akai-ux.git"} if ui.nil?
 
+cle = {"path" => "../sakai-cle", "repository" => "https://source.sakaiproject.org/svn/sakai/tags/sakai-2.8.0", "port" => "8880", "ajp_port" => "8889" } if cle.nil?
+hybrid = {"path" => "#{cle["path"]}/hybrid", "repository" => "https://source.sakaiproject.org/svn/hybrid/branches/hybrid-1.1.x"} if hybrid.nil?
+
+db = {"driver" => "derby", "user" => "sakaiuser", "password" => "ironchef", "db" => "nakamura"} if db.nil?
+
+tomcat = {"mirror" => "apache.mirrors.tds.net", "version" => "5.5.33"} if tomcat.nil?
+
+hostname = Socket.gethostname if hostname.nil?
+# don't worry, no data gets sent to this google ip
+# Since UDP is a stateless protocol connect() merely makes a system call
+# which figures out how to route the packets
+ip = UDPSocket.open {|s| s.connect('64.233.187.99', 1); s.addr.last } if ip.nil?
+
+templatePath = "./templates" if templatePath.nil?
+
 num_users_groups = 5 if num_users_groups.nil?
 update_ui = true if update_ui.nil?
+
+Mustache.template_path = "./templates"
 
 # setup java command and options
 JAVA_EXEC = "java" if !defined? JAVA_EXEC
@@ -32,12 +56,15 @@ end
 APP_OPTS = "" if !defined? APP_OPTS
 JAVA_CMD = "#{JAVA_EXEC} #{JAVA_OPTS} #{JAVA_DEBUG_OPTS}" if !defined? JAVA_CMD
 
+# Custom app jar file pattern
+APP_FILE = "../nakamura/app/target/org.sakaiproject.nakamura.app-*.jar" if !defined? APP_FILE
+
 # setup maven command and options
 MVN_EXEC = "mvn" if !defined? MVN_EXEC
-MVN_OPTS = "-Dmaven.test.skip" if !defined? MVN_OPTS
+MVN_OPTS = "-B -e -Dmaven.test.skip" if !defined? MVN_OPTS
 MVN_CMD = "#{MVN_EXEC} #{MVN_OPTS}" if !defined? MVN_CMD
 
-CLEAN_FILES = ["./derby.log", "./sling", "./activemq-data", "./store"]
+CLEAN_FILES = ["./derby.log", "./sling", "./activemq-data", "./store", "./sakai2-demo", "./tmp", "./ui-conf"]
 
 puts "Using settings:"
 puts "JAVA: #{JAVA_CMD}"
@@ -90,15 +117,112 @@ task :clone do
   end
 end
 
+desc "Checkout CLE from SVN"
+task :clone_cle do
+  if cle.has_key? "path"
+    if File.directory? cle["path"]
+      puts "#{cle["path"]} already exists."
+    elsif cle.has_key? "repository"
+      system("svn -q checkout #{cle["repository"]} #{cle["path"]}")
+      if hybrid.has_key? "path" and hybrid.has_key? "repository"
+        system("svn -q checkout #{hybrid["repository"]} #{hybrid["path"]}")
+      end
+    end
+  end
+end
+
+desc "Download Tomcat tarball"
+task :dl_tomcat do
+  tomcat["filename"] = "apache-tomcat-#{tomcat["version"]}.tar.gz"
+  if not File.exists? tomcat["filename"]
+    puts "Downloading #{tomcat["filename"]} from #{tomcat["mirror"]}"
+    Net::HTTP.start(tomcat["mirror"]) do |http|
+      resp = http.get("/tomcat/tomcat-5/v#{tomcat["version"]}/bin/#{tomcat["filename"]}")
+      open("#{tomcat["filename"]}", "wb") do |file|
+        file.write(resp.body)
+      end
+    end
+  end
+end
+
+desc "Unpack Tomcat tarball"
+task :unpack_tomcat => :dl_tomcat do
+  puts "Unpacking #{tomcat["filename"]} to sakai2-demo"
+  unpack(tomcat["filename"], lambda{|p| p.sub(/^apache-tomcat-#{tomcat["version"]}/, 'sakai2-demo')})
+end
+
+desc "Configure the CLE to use NakamuraUserDirectoryProvider"
+task :config_directoryprovider do #=> [:build_cle] do
+  cXML = ""
+  components = 'sakai2-demo/components/sakai-provider-pack/WEB-INF/components.xml'
+  File.open(components) do |f|
+    cXML = REXML::Document.new(f)
+    beans = REXML::XPath.first(cXML, '//beans')
+    bean = beans.add_element("bean", {
+      "id" => "org.sakaiproject.user.api.UserDirectoryProvider",
+      "class" => "org.sakaiproject.provider.user.NakamuraUserDirectoryProvider",
+      "init-method" => "init"
+    })
+    prop1 = bean.add_element("property", {"name" => "threadLocalManager"})
+    prop1.add_element("ref", {
+      "bean" => "org.sakaiproject.thread_local.api.ThreadLocalManager"
+    })
+    prop2 = bean.add_element("property", {
+      "name" => "serverConfigurationService"
+    })
+    prop2.add_element("ref", {
+      "bean" => "org.sakaiproject.component.api.ServerConfigurationService"
+    })
+  end
+
+  File.open(components, "w+") do |f|
+    cXML.write f
+  end
+
+  FileUtils.rm("sakai2-demo/components/sakai-provider-pack/WEB-INF/components-demo.xml")
+end
+
+def unpack(path, path_transform=lambda{|p| p})
+  Dir.chdir(File.dirname(path)) do
+    Archive.read_open_filename(path) do |archive|
+      while entry = archive.next_header
+        path = path_transform.call(entry.pathname)
+        if entry.directory?
+          FileUtils.mkdir_p path unless File.directory? path
+        elsif entry.symbolic_link?
+          File.symlink(entry.symlink, path)
+        else
+          FileUtils.mkdir_p(File.dirname(path)) unless File.directory? File.dirname(path)
+          File.open(path, 'w+') do |fp|
+            archive.read_data(1024) {|data| fp.write(data)}
+          end
+        end
+        File.chmod(entry.mode, path) unless entry.symbolic_link?
+      end
+    end
+  end
+end
+
 desc "Clean files and directories from a previous server start."
-task :clean => [:kill] do
+task :clean => [:kill, :clean_mysql] do
   touch CLEAN_FILES
   rm_r CLEAN_FILES
 end
 
 desc "Clean the build artifacts generated by the UI build."
 task :cleanui do
-  system("cd #{ui["path"]} && #{MVN_CMD} clean")
+  Dir.chdir ui["path"] do
+    system("#{MVN_CMD} clean")
+  end
+end
+
+desc "Clean the mysql db."
+task :clean_mysql do
+  if db["driver"] == "mysql"
+    my = Mysql::new("localhost", db["user"], db["password"])
+    my.query("drop database if exists #{db["db"]}")
+    my.query("create database #{db["db"]} default character set 'utf8'")
+  end
 end
 
 desc "[Alias to :update]"
@@ -124,30 +248,65 @@ task :update do
   end
 end
 
+desc "Update the SVN checkout of CLE"
+task :update_cle do
+  if cle.has_key? "path" and File.directory? cle["path"]
+    puts "Updating #{cle["path"]}"
+    system("svn -q update #{cle["path"]}")
+    if hybrid.has_key? "path" and File.directory? hybrid["path"]
+      puts "Updating #{hybrid["path"]}"
+      system("svn -q update #{hybrid["path"]}")
+    end
+  end
+end
+
 desc "Rebuild the UI and Nakamura projects, using a release build for the UI."
 task :release_build do
-  system("cd #{ui["path"]} && #{MVN_CMD} clean install -P sakai-release")
+  Dir.chdir ui["path"] do
+    system("#{MVN_CMD} clean install -P sakai-release")
+  end
   for p in server do
-    system("cd #{p["path"]} && #{MVN_CMD} clean install")
+    Dir.chdir p["path"] do
+      system("#{MVN_CMD} clean install")
+    end
   end
 end
 
 desc "Build the UI and Nakamura projects, make a webstart"
 task :webstart => [:rebuild] do
-  system("cd #{nakamura["path"]}/webstart && #{MVN_CMD} clean install")
+  Dir.chdir nakamura["path"] do
+    system("#{MVN_CMD} clean install")
+  end
 end
 
 desc "Rebuild the UI and Nakamura projects."
-task :rebuild do
-  system("cd #{ui["path"]} && #{MVN_CMD} clean install")
+task :rebuild => [:config] do
+  Dir.chdir ui["path"] do
+    system("#{MVN_CMD} clean install")
+  end
   for p in server do
-    system("cd #{p["path"]} && #{MVN_CMD} clean install")
+    Dir.chdir p["path"] do
+      system("#{MVN_CMD} clean install")
+    end
   end
 end
 
 desc "Rebuild just the app bundle to include any changed bundles without building everything."
-task :fastrebuild do
-  system("cd ../nakamura/app && #{MVN_CMD} clean install")
+task :fastrebuild => [:config] do
+  Dir.chdir "../nakamura/app" do
+    system("#{MVN_CMD} clean install")
+  end
+end
+
+desc "Rebuild the CLE and its hybrid module"
+task :rebuild_cle => [:config_cle] do
+  deploydir = "#{Dir.pwd}/sakai2-demo"
+  Dir.chdir(cle["path"]) do
+    system("#{MVN_CMD} -Dmaven.tomcat.home=#{deploydir} clean install sakai:deploy")
+  end
+  Dir.chdir(hybrid["path"]) do
+    system("#{MVN_CMD} -Dmaven.tomcat.home=#{deploydir} clean install sakai:deploy")
+  end
 end
 
 desc "[Alias to :run]"
@@ -157,7 +316,7 @@ end
 desc "Start a running server. Will kill the previously started server if still running."
 task :run => [:kill] do
   app_file = nil
-  Dir["../nakamura/app/target/org.sakaiproject.nakamura.app-*.jar"].each do |path|
+  Dir[APP_FILE].each do |path|
     if !path.end_with? "-sources.jar" then
       app_file = path
     end
@@ -172,13 +331,14 @@ task :run => [:kill] do
   File.open(".nakamura.pid", 'w') {|f| f.write(pid) }
 end
 
-desc "[Alias to :kill]"
-task :stop => :kill do
+desc "Start a CLE server. Will kill the previously started server if still running."
+task :run_cle => [:kill_cle] do
+  ENV['CATALINA_PID'] = ".sakai-cle.pid"
+  pid = fork { exec( "./sakai2-demo/bin/startup.sh" ) }
+  Process.detach(pid)
 end
 
-desc "Kill the previously started server."
-task :kill do
-  pidfile = ".nakamura.pid"
+def kill(pidfile)
   if File.exists?(pidfile)
     File.open(pidfile, "r") do |f|
       while (line = f.gets) do
@@ -202,29 +362,164 @@ task :kill do
   end
 end
 
+desc "Kill the previously started server."
+task :kill do
+  kill(".nakamura.pid")
+end
+
+desc "Kill the CLE server."
+task :kill_cle do
+  kill(".sakai-cle.pid")
+end
+
+desc "Configure the CLE server"
+task :config_cle => [:unpack_tomcat] do
+  class SakaiProperties < Mustache
+  end
+  sakaiprops = SakaiProperties.new
+  sakaiprops[:s2_tag] = cle["repository"].split('/')[-1]
+  sakaiprops[:hybrid_tag] = hybrid["repository"].split('/')[-1]
+  Dir.chdir(cle["path"]) do
+    sakaiprops[:repo_rev] = /Revision.*$/.match(`svn info`).to_s
+  end
+  sakaiprops[:server] = hostname
+  sakaiprops[:build_date] = Time.now
+  sakaiprops[:k2_http_port] = nakamura["port"]
+  sakaiprops[:external_ip] = ip
+  if not Dir.exists? "./sakai2-demo/sakai"
+    Dir.mkdir("./sakai2-demo/sakai")
+  end
+  File.open("./sakai2-demo/sakai/sakai.properties", 'w') do |f|
+    f.write(sakaiprops.render())
+  end
+
+  sXML = ""
+  # Read the default server.xml into memory replacing the default ports with the configured ones
+  File.open("./sakai2-demo/conf/server.xml") do |f|
+    sXML = REXML::Document.new f
+    sXML.elements.each("Server/Service/Connector") do |el|
+      if el.attributes["port"] == "8080"
+        el.attributes["port"] = cle["port"]
+      elsif el.attributes["port"] == "8009"
+        el.attributes["port"] = cle["ajp_port"]
+      end
+    end
+  end
+
+  # Write the new server.xml
+  File.open("./sakai2-demo/conf/server.xml", "w+") do |f|
+    sXML.write f
+  end
+end
+
+desc "Configure nakamura"
+task :config do
+  FileUtils.mkdir_p("./sling/config/org/sakaiproject/nakamura/proxy")
+  FileUtils.mkdir_p("./sling/config/org/sakaiproject/nakamura/http/usercontent")
+  FileUtils.mkdir_p("./sling/config/org/sakaiproject/nakamura/lite/storage/jdbc")
+  class TrustedLogin < Mustache
+  end
+  tl = TrustedLogin.new
+  tl["httpd_port"] = nakamura["port"]
+  File.open("./sling/config/org/sakaiproject/nakamura/proxy/TrustedLoginTokenProxyPreProcessor.config", 'w') do |f|
+    f.write(tl.render())
+  end
+
+  class ServerProtection < Mustache
+  end
+  sp = ServerProtection.new
+  sp["server"] = hostname
+  sp["httpd_port"] = nakamura["port"]
+  File.open("./sling/config/org/sakaiproject/nakamura/http/usercontent/ServerProtectionServiceImpl.config", 'w') do |f|
+    f.write(sp.render())
+  end
+
+  if db["driver"] == "mysql"
+    class StoragePool < Mustache
+    end
+    stp = StoragePool.new
+    stp["dbuser"] = db["user"]
+    stp["dbpass"] = db["password"]
+    File.open("./sling/config/org/sakaiproject/nakamura/lite/storage/jdbc/JDBCStorageClientPool.config", 'w') do |f|
+      f.write(stp.render())
+    end
+  end
+end
+
+def enableInPortal(path, server)
+  json = ""
+  resp = RestClient.get("#{server}/#{path}")
+  json = JSON.parse(resp.to_str)
+  json["personalportal"] = true
+  postJsonAsFile(path, JSON.generate(json), server)
+end
+
+def enableInSakaiDoc(path, server)
+  json = ""
+  resp = RestClient.get("#{server}/#{path}")
+  json = JSON.parse(resp.to_str)
+  json["sakaidocs"] = true
+  postJsonAsFile(path, JSON.generate(json), server)
+end
+
+def postJsonAsFile(path, json, server)
+  filename = File.basename(path)
+  # I'd rather not write out an intermediary file here, but I'm not sure it's
+  # possible to avoid it.
+  if not Dir.exists?("./tmp")
+    Dir.mkdir("./tmp")
+  end
+  File.open("./tmp/#{filename}", "w") do |temp|
+    temp.write(json)
+  end
+
+  RestClient.post("#{server}/#{File.dirname(path)}", filename => File.new("./tmp/#{filename}"), "#{filename}@TypeHint" => "nt:file")
+  File.delete("./tmp/#{filename}")
+end
+
+desc "Enable Hybrid Widgets"
+task :enable_hybrid do
+  enableInPortal("devwidgets/mysakai2/config.json", "http://admin:admin@localhost:#{nakamura["port"]}")
+  enableInSakaiDoc("devwidgets/basiclti/config.json", "http://admin:admin@localhost:#{nakamura["port"]}")
+  enableInSakaiDoc("devwidgets/sakai2tools/config.json", "http://admin:admin@localhost:#{nakamura["port"]}")
+end
+
 # ==================
 # = Set FSResource =
 # ==================
 
-desc "Set the FSResource configs to use the UI files on disk."
-task :setfsresource => [:setuprequests] do
+def setFsResource(slingpath, fspath)
   # set fsresource paths
   # has to be a single URL POST, no post params (weird, I know)
-  uiabspath = `cd #{ui["path"]} && pwd`.chomp
+  url = "/system/console/configMgr/[Temporary%20PID%20replaced%20by%20real%20PID%20upon%20save]"
+  url += "?propertylist=provider.roots,provider.file,provider.checkinterval"
+  url += "&provider.roots=#{slingpath}"
+  url += "&provider.file=#{fspath}"
+  url += "&provider.checkinterval=1000"
+  url += "&apply=true"
+  url += "&factoryPid=org.apache.sling.fsprovider.internal.FsResourceProvider"
+  url += "&action=ajaxConfigManager"
+  req = Net::HTTP::Post.new(url)
+  req.basic_auth("admin", "admin")
+  response = @localinstance.request(req)
+  puts response.inspect
+end
+
+desc "Set the FSResource configs to use the UI files on disk."
+task :setfsresource => [:setuprequests] do
+  uiabspath = File.expand_path(ui["path"])
   ["/dev", "/devwidgets", "/tests"].each do |dir|
-    url = "/system/console/configMgr/[Temporary%20PID%20replaced%20by%20real%20PID%20upon%20save]"
-    url += "?propertylist=provider.roots,provider.file,provider.checkinterval"
-    url += "&provider.roots=#{dir}"
-    url += "&provider.file=#{uiabspath}#{dir}"
-    url += "&provider.checkinterval=1000"
-    url += "&apply=true"
-    url += "&factoryPid=org.apache.sling.fsprovider.internal.FsResourceProvider"
-    url += "&action=ajaxConfigManager"
-    req = Net::HTTP::Post.new(url)
-    req.basic_auth("admin", "admin")
-    response = @localinstance.request(req)
-    puts response.inspect
+    setFsResource(dir, "#{uiabspath}#{dir}")
   end
+end
+
+desc "Set fsresource just for the UI config"
+task :setfsresource_uiconf => [:setuprequests] do
+  if not Dir.exists?("./ui-conf")
+    FileUtils.cp_r("#{ui["path"]}/dev/configuration/", "./ui-conf")
+    FileUtils.cp("./templates/config_custom.js", "./ui-conf/")
+  end
+  setFsResource("/dev/configuration", "./ui-conf")
 end
 
 # ===========================================
@@ -244,7 +539,7 @@ module Net::HTTPHeader
 end
 
 task :setuprequests do
-  @uri = URI.parse("http://localhost:8080")
+  @uri = URI.parse("http://localhost:#{nakamura["port"]}")
   @localinstance = Net::HTTP.new(@uri.host, @uri.port)
 end
 
@@ -447,6 +742,12 @@ end
 
 desc "Update and rebuild the UI and Nakamura projects."
 task :build => [:update, :rebuild]
+
+desc "Update and rebuild the CLE"
+task :build_cle => [:update_cle, :rebuild_cle]
+
+desc "Build a hybrid server"
+task :hybrid => [:build, :run, :build_cle, :run_cle, :setfsresource_uiconf, :config_directoryprovider, :enable_hybrid]
 
 desc "Create users, greate groups, make connections, send messages, set FSResource, clean the UI"
 task :setup => [:createusers, :makeconnections, :sendmessages, :setfsresource, :cleanui]

@@ -20,7 +20,8 @@ If you want to stop the server run
 
 If you just re-run `rake` the kill job will automatically be run before starting the new server.
 
-There are other handy targets, like:
+A full list of targets can be found by running `rake -T`
+Some other handy targets are:
 
 * To do a build without the git pull
 
