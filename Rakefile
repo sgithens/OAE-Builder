@@ -32,6 +32,10 @@ db = {"driver" => "derby", "user" => "sakaiuser", "password" => "ironchef", "db"
 
 tomcat = {"mirror" => "apache.mirrors.tds.net", "version" => "5.5.33"} if tomcat.nil?
 
+if db["driver"] == "mysql"
+  Bundler.require(:mysql)
+end
+
 hostname = Socket.gethostname if hostname.nil?
 # don't worry, no data gets sent to this google ip
 # Since UDP is a stateless protocol connect() merely makes a system call
