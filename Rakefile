@@ -14,61 +14,57 @@ require 'archive/tar/minitar'
 # Make sure we always start from where the Rakefile is
 Dir.chdir(File.dirname(__FILE__))
 
-# read in and evaluate an external settings file
-eval File.open('settings.rb').read if File.exists?('settings.rb')
+sparse = {"path" => "../sparsemapcontent", "repository" => "https://github.com/ieb/sparsemapcontent.git"}
+solr = {"path" => "../solr", "repository" => "https://github.com/ieb/solr.git"}
+nakamura = {"path" => "../nakamura", "remote" => "sakaiproject", "repository" => "https://github.com/sakaiproject/nakamura.git", "port" => "8080" }
 
-sparse = {"path" => "../sparsemapcontent", "repository" => "https://github.com/ieb/sparsemapcontent.git"} if sparse.nil?
-solr = {"path" => "../solr", "repository" => "https://github.com/ieb/solr.git"} if solr.nil?
-nakamura = {"path" => "../nakamura", "remote" => "sakaiproject", "repository" => "https://github.com/sakaiproject/nakamura.git", "port" => "8080" } if nakamura.nil?
+server = [sparse, solr, nakamura]
 
-server = [sparse, solr, nakamura] if server.nil?
+ui = {"path" => "../3akai-ux", "repository" => "https://github.com/sakaiproject/3akai-ux.git"}
 
-ui = {"path" => "../3akai-ux", "repository" => "https://github.com/sakaiproject/3akai-ux.git"} if ui.nil?
+cle = {"path" => "../sakai-cle", "repository" => "https://source.sakaiproject.org/svn/sakai/tags/sakai-2.8.0", "port" => "8880", "ajp_port" => "8889" }
+hybrid = {"path" => "#{cle["path"]}/hybrid", "repository" => "https://source.sakaiproject.org/svn/hybrid/branches/hybrid-1.1.x"}
 
-cle = {"path" => "../sakai-cle", "repository" => "https://source.sakaiproject.org/svn/sakai/tags/sakai-2.8.0", "port" => "8880", "ajp_port" => "8889" } if cle.nil?
-hybrid = {"path" => "#{cle["path"]}/hybrid", "repository" => "https://source.sakaiproject.org/svn/hybrid/branches/hybrid-1.1.x"} if hybrid.nil?
+db = {"driver" => "derby", "user" => "sakaiuser", "password" => "ironchef", "db" => "nakamura"}
 
-db = {"driver" => "derby", "user" => "sakaiuser", "password" => "ironchef", "db" => "nakamura"} if db.nil?
+tomcat = {"mirror" => "apache.mirrors.tds.net", "version" => "5.5.33"}
 
-tomcat = {"mirror" => "apache.mirrors.tds.net", "version" => "5.5.33"} if tomcat.nil?
-
-if db["driver"] == "mysql"
-  Bundler.require(:mysql)
-end
-
-hostname = Socket.gethostname if hostname.nil?
+hostname = Socket.gethostname
 # don't worry, no data gets sent to this google ip
 # Since UDP is a stateless protocol connect() merely makes a system call
 # which figures out how to route the packets
-ip = UDPSocket.open {|s| s.connect('64.233.187.99', 1); s.addr.last } if ip.nil?
+ip = UDPSocket.open {|s| s.connect('64.233.187.99', 1); s.addr.last }
 
-templatePath = "./templates" if templatePath.nil?
+templatePath = "./templates"
 
-num_users_groups = 5 if num_users_groups.nil?
-update_ui = true if update_ui.nil?
+num_users_groups = 5
+update_ui = true
 
 Mustache.template_path = "./templates"
 
 # setup java command and options
-JAVA_EXEC = "java" if !defined? JAVA_EXEC
-JAVA_OPTS = "-Xms256m -Xmx1024m -XX:PermSize=64m -XX:MaxPermSize=512m" if !defined? JAVA_OPTS
-if !defined? JAVA_DEBUG_OPTS then
-  if defined? JAVA_DEBUG and JAVA_DEBUG then
-    JAVA_DEBUG_OPTS = "-Xdebug -Xrunjdwp:transport=dt_socket,address=8500,server=y,suspend=n"
-  else
-    JAVA_DEBUG_OPTS = ""
-  end
-end
-APP_OPTS = "" if !defined? APP_OPTS
-JAVA_CMD = "#{JAVA_EXEC} #{JAVA_OPTS} #{JAVA_DEBUG_OPTS}" if !defined? JAVA_CMD
+JAVA_EXEC = "java"
+JAVA_OPTS = "-Xms256m -Xmx1024m -XX:PermSize=64m -XX:MaxPermSize=512m"
+JAVA_DEBUG_OPTS = "-Xdebug -Xrunjdwp:transport=dt_socket,address=8500,server=y,suspend=n"
+APP_OPTS = ""
 
 # Custom app jar file pattern
-APP_FILE = "../nakamura/app/target/org.sakaiproject.nakamura.app-*.jar" if !defined? APP_FILE
+APP_FILE = "../nakamura/app/target/org.sakaiproject.nakamura.app-*.jar"
 
 # setup maven command and options
-MVN_EXEC = "mvn" if !defined? MVN_EXEC
-MVN_OPTS = "-B -e -Dmaven.test.skip" if !defined? MVN_OPTS
-MVN_CMD = "#{MVN_EXEC} #{MVN_OPTS}" if !defined? MVN_CMD
+MVN_EXEC = "mvn"
+MVN_OPTS = "-B -e -Dmaven.test.skip"
+MVN_CMD = "#{MVN_EXEC} #{MVN_OPTS}"
+
+# read in and evaluate an external settings file
+eval File.open('settings.rb').read if File.exists?('settings.rb')
+
+JAVA_CMD = "#{JAVA_EXEC} #{JAVA_OPTS} #{defined? JAVA_DEBUG and JAVA_DEBUG ? JAVA_DEBUG_OPTS : ''}"
+
+
+if db["driver"] == "mysql"
+  Bundler.require(:mysql)
+end
 
 CLEAN_FILES = ["./derby.log", "./sling", "./activemq-data", "./store", "./sakai2-demo", "./tmp", "./ui-conf"]
 
