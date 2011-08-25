@@ -302,7 +302,6 @@ end
 
 desc "Start a running server. Will kill the previously started server if still running."
 task :run => [:kill] do
-  app_file = nil
   Dir[app_file].each do |path|
     if !path.end_with? "-sources.jar" then
       app_file = path
