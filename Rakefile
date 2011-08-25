@@ -736,7 +736,7 @@ desc "Update and rebuild the CLE"
 task :build_cle => [:update_cle, :rebuild_cle]
 
 desc "Build a hybrid server"
-task :hybrid => [:build, :run, :build_cle, :run_cle, :setfsresource_uiconf, :config_directoryprovider, :enable_hybrid]
+task :hybrid => [:build, :run, :build_cle, :config_directoryprovider, :run_cle, :setfsresource_uiconf, :enable_hybrid]
 
 desc "Create users, greate groups, make connections, send messages, set FSResource, clean the UI"
 task :setup => [:createusers, :makeconnections, :sendmessages, :setfsresource, :cleanui]
