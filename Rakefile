@@ -14,8 +14,8 @@ require 'archive/tar/minitar'
 # Make sure we always start from where the Rakefile is
 Dir.chdir(File.dirname(__FILE__))
 
-sparse = {"path" => "../sparsemapcontent", "repository" => "https://github.com/ieb/sparsemapcontent.git", "branch" => "master", "localbranch" => "master"} if sparse.nil?
-solr = {"path" => "../solr", "repository" => "https://github.com/ieb/solr.git", "branch" => "master", "localbranch" => "master"} if solr.nil?
+sparse = {"path" => "../sparsemapcontent", "repository" => "https://github.com/sakaiproject/sparsemapcontent.git", "branch" => "master", "localbranch" => "master"} if sparse.nil?
+solr = {"path" => "../solr", "repository" => "https://github.com/sakaiproject/solr.git", "branch" => "master", "localbranch" => "master"} if solr.nil?
 nakamura = {"path" => "../nakamura", "remote" => "sakaiproject", "repository" => "https://github.com/sakaiproject/nakamura.git", "branch" => "master", "localbranch" => "master", "port" => "8080"} if nakamura.nil?
 
 server = [sparse, solr, nakamura]
