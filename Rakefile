@@ -14,13 +14,13 @@ require 'archive/tar/minitar'
 # Make sure we always start from where the Rakefile is
 Dir.chdir(File.dirname(__FILE__))
 
-sparse = {"path" => "../sparsemapcontent", "repository" => "https://github.com/ieb/sparsemapcontent.git"}
-solr = {"path" => "../solr", "repository" => "https://github.com/ieb/solr.git"}
-nakamura = {"path" => "../nakamura", "remote" => "sakaiproject", "repository" => "https://github.com/sakaiproject/nakamura.git", "port" => "8080" }
+sparse = {"path" => "../sparsemapcontent", "repository" => "https://github.com/ieb/sparsemapcontent.git", "branch" => "master", "localbranch" => "master"} if sparse.nil?
+solr = {"path" => "../solr", "repository" => "https://github.com/ieb/solr.git", "branch" => "master", "localbranch" => "master"} if solr.nil?
+nakamura = {"path" => "../nakamura", "remote" => "sakaiproject", "repository" => "https://github.com/sakaiproject/nakamura.git", "branch" => "master", "localbranch" => "master", "port" => "8080"} if nakamura.nil?
 
 server = [sparse, solr, nakamura]
 
-ui = {"path" => "../3akai-ux", "repository" => "https://github.com/sakaiproject/3akai-ux.git"}
+ui = {"path" => "../3akai-ux", "repository" => "https://github.com/sakaiproject/3akai-ux.git", "branch" => "master", "localbranch" => "master"} if ui.nil?
 
 cle = {"path" => "../sakai-cle", "repository" => "https://source.sakaiproject.org/svn/sakai/tags/sakai-2.8.0", "port" => "8880", "ajp_port" => "8889" }
 hybrid = {"path" => "#{cle["path"]}/hybrid", "repository" => "https://source.sakaiproject.org/svn/hybrid/branches/hybrid-1.1.x"}
@@ -222,6 +222,9 @@ task :update do
     g = Git.open(ui["path"])
     remote = ui["remote"] || "origin"
     branch = remote + "/" + (ui["branch"] || "master")
+    localbranch = ui["localbranch"] || "master"
+    puts "Checkout out #{localbranch}"
+    g.checkout(g.branch(localbranch))
     puts "Updating #{ui["path"]}:#{branch}"
     puts g.pull(remote, branch)
   end
@@ -230,6 +233,9 @@ task :update do
     g = Git.open(p["path"])
     remote = p["remote"] || "origin"
     branch = remote + "/" + (p["branch"] || "master")
+    localbranch = p["localbranch"] || "master"
+    puts "Checkout out #{localbranch}"
+    g.checkout(g.branch(localbranch))
     puts "Updating #{p["path"]}:#{branch}"
     puts g.pull(remote, branch)
   end
