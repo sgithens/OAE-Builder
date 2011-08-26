@@ -707,6 +707,22 @@ task :sendmessages => [:setuprequests] do
   end
 end
 
+desc "Send lots of messages to the specified user, from the specified user"
+task :sendlotsofmessages => [:setuprequests] do
+  if (!(ENV["to"] && ENV["from"] && ENV["num"])) then
+    puts "Usage: rake sendlotsofmessages to=user1 from=user2 num=60"
+  else
+    to = ENV["to"]
+    from = ENV["from"]
+    num = ENV["num"].to_i
+    puts "Sending #{num} messages from #{from} to #{to}"
+    num.times do |i|
+      puts send_internal_message "#{to}", "#{from}", "Message #{i} #{from} => #{to}", "Body of Message #{i} #{from} => #{to}"
+    end
+  end
+end
+
+
 desc "[Alias to :status]"
 task :stat => :status do
 end
