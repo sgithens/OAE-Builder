@@ -47,6 +47,8 @@ Mustache.template_path = "./templates"
 java_exec = "java"
 java_opts = "-Xms256m -Xmx1024m -XX:PermSize=64m -XX:MaxPermSize=512m"
 java_debug_opts = "-Xdebug -Xrunjdwp:transport=dt_socket,address=8500,server=y,suspend=n"
+java_debug = false
+
 app_opts = ""
 
 # Custom app jar file pattern
@@ -61,7 +63,7 @@ mvn_cmd = "#{mvn_exec} #{mvn_opts}"
 eval File.open('settings.rb').read if File.exists?('settings.rb')
 
 java_cmd = "#{java_exec} #{java_opts}"
-if defined? java_debug and java_debug 
+if java_debug
   java_cmd += " #{java_debug_opts}"
 end
 
