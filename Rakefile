@@ -16,7 +16,9 @@ Dir.chdir(File.dirname(__FILE__))
 
 sparse = {"path" => "../sparsemapcontent", "repository" => "https://github.com/sakaiproject/sparsemapcontent.git", "branch" => "master", "localbranch" => "master"} if sparse.nil?
 solr = {"path" => "../solr", "repository" => "https://github.com/sakaiproject/solr.git", "branch" => "master", "localbranch" => "master"} if solr.nil?
-nakamura = {"path" => "../nakamura", "remote" => "sakaiproject", "repository" => "https://github.com/sakaiproject/nakamura.git", "branch" => "master", "localbranch" => "master", "port" => "8080"} if nakamura.nil?
+#nakamura = {"path" => "../nakamura", "remote" => "sakaiproject", "repository" => "https://github.com/sakaiproject/nakamura.git", "branch" => "master", "localbranch" => "master", "port" => "8080"} if nakamura.nil?
+nakamura = {"path" => "../nakamura", "repository" => "https://github.com/sakaiproject/nakamura.git", "branch" => "master", "localbranch" => "master", "port" => "8080"} if nakamura.nil?
+
 
 server = [sparse, solr, nakamura]
 
@@ -333,13 +335,13 @@ task :run_cle => [:kill_cle] do
   Process.detach(pid)
 end
 
-def kill(pidfile)
+def kill(pidfile, signal="TERM")
   if File.exists?(pidfile)
     File.open(pidfile, "r") do |f|
       while (line = f.gets) do
         pid = line.to_i
         begin
-          Process.kill("TERM", pid)
+          Process.kill(signal, pid)
           puts "Killing pid #{pid}"
           while (sleep 5) do
             begin
@@ -368,7 +370,7 @@ end
 
 desc "Kill the CLE server."
 task :kill_cle do
-  kill(".sakai-cle.pid")
+  kill(".sakai-cle.pid", 9)
 end
 
 desc "Configure the CLE server"
@@ -408,6 +410,10 @@ task :config_cle => [:unpack_tomcat] do
   # Write the new server.xml
   File.open("./sakai2-demo/conf/server.xml", "w+") do |f|
     sXML.write f
+  end
+
+  File.open("./sakai2-demo/bin/setenv.sh", "w+") do |f|
+    f.write("export JAVA_OPTS='-server -Xms512m -Xmx1028m -XX:NewSize=192m -XX:MaxNewSize=384m -XX:PermSize=96m -XX:MaxPermSize=512m'")
   end
 end
 
@@ -763,6 +769,9 @@ task :build_cle => [:update_cle, :rebuild_cle]
 
 desc "Build a hybrid server"
 task :hybrid => [:build, :run, :build_cle, :config_directoryprovider, :run_cle, :setfsresource_uiconf, :enable_hybrid]
+
+desc "Build a hybrid server from scratch, including checking out all the source."
+task :hybrid_scratch => [:clone, :clone_cle, :hybrid]
 
 desc "Create users, greate groups, make connections, send messages, set FSResource, clean the UI"
 task :setup => [:createusers, :makeconnections, :sendmessages, :setfsresource, :cleanui]
