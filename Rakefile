@@ -14,17 +14,19 @@ require 'archive/tar/minitar'
 # Make sure we always start from where the Rakefile is
 Dir.chdir(File.dirname(__FILE__))
 
-sparse = {"path" => "../sparsemapcontent", "repository" => "https://github.com/sakaiproject/sparsemapcontent.git", "branch" => "master", "localbranch" => "master"} if sparse.nil?
-solr = {"path" => "../solr", "repository" => "https://github.com/sakaiproject/solr.git", "branch" => "master", "localbranch" => "master"} if solr.nil?
-nakamura = {"path" => "../nakamura", "repository" => "https://github.com/sakaiproject/nakamura.git", "branch" => "master", "localbranch" => "master", "port" => "8080"} if nakamura.nil?
+builddir = ".."
+
+sparse = {"path" => "#{builddir}/sparsemapcontent", "repository" => "https://github.com/sakaiproject/sparsemapcontent.git", "branch" => "master", "localbranch" => "master"} if sparse.nil?
+solr = {"path" => "#{builddir}/solr", "repository" => "https://github.com/sakaiproject/solr.git", "branch" => "master", "localbranch" => "master"} if solr.nil?
+nakamura = {"path" => "#{builddir}/nakamura", "repository" => "https://github.com/sakaiproject/nakamura.git", "branch" => "master", "localbranch" => "master", "port" => "8080"} if nakamura.nil?
 
 
 server = [sparse, solr, nakamura]
 
-ui = {"path" => "../3akai-ux", "repository" => "https://github.com/sakaiproject/3akai-ux.git", "branch" => "master", "localbranch" => "master"} if ui.nil?
+ui = {"path" => "#{builddir}/3akai-ux", "repository" => "https://github.com/sakaiproject/3akai-ux.git", "branch" => "master", "localbranch" => "master"} if ui.nil?
 fsresources = ["/dev", "/devwidgets", "/tests"] if fsresources.nil?
 
-cle = {"path" => "../sakai-cle", "repository" => "https://source.sakaiproject.org/svn/sakai/tags/sakai-2.8.0", "port" => "8880", "ajp_port" => "8889" }
+cle = {"path" => "#{builddir}/sakai-cle", "repository" => "https://source.sakaiproject.org/svn/sakai/tags/sakai-2.8.0", "port" => "8880", "ajp_port" => "8889" }
 hybrid = {"path" => "#{cle["path"]}/hybrid", "repository" => "https://source.sakaiproject.org/svn/hybrid/branches/hybrid-1.1.x"}
 
 db = {"driver" => "derby", "user" => "sakaiuser", "password" => "ironchef", "db" => "nakamura"}
@@ -290,7 +292,7 @@ end
 
 desc "Rebuild just the app bundle to include any changed bundles without building everything."
 task :fastrebuild => [:config] do
-  Dir.chdir "../nakamura/app" do
+  Dir.chdir "#{builddir}/nakamura/app" do
     system("#{mvn_cmd} clean install")
   end
 end
