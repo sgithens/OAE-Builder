@@ -16,7 +16,6 @@ Dir.chdir(File.dirname(__FILE__))
 
 sparse = {"path" => "../sparsemapcontent", "repository" => "https://github.com/sakaiproject/sparsemapcontent.git", "branch" => "master", "localbranch" => "master"} if sparse.nil?
 solr = {"path" => "../solr", "repository" => "https://github.com/sakaiproject/solr.git", "branch" => "master", "localbranch" => "master"} if solr.nil?
-#nakamura = {"path" => "../nakamura", "remote" => "sakaiproject", "repository" => "https://github.com/sakaiproject/nakamura.git", "branch" => "master", "localbranch" => "master", "port" => "8080"} if nakamura.nil?
 nakamura = {"path" => "../nakamura", "repository" => "https://github.com/sakaiproject/nakamura.git", "branch" => "master", "localbranch" => "master", "port" => "8080"} if nakamura.nil?
 
 
