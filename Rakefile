@@ -16,7 +16,7 @@ Dir.chdir(File.dirname(__FILE__))
 
 builddir = ENV['builddir']
 if not builddir then
-  ".."
+  builddir = ".."
 end 
 
 sparse = {"path" => "#{builddir}/sparsemapcontent", "repository" => "https://github.com/sakaiproject/sparsemapcontent.git", "branch" => "master", "localbranch" => "master"} if sparse.nil?
