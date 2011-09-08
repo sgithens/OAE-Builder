@@ -14,7 +14,10 @@ require 'archive/tar/minitar'
 # Make sure we always start from where the Rakefile is
 Dir.chdir(File.dirname(__FILE__))
 
-builddir = ".."
+builddir = ENV['builddir']
+if not builddir then
+  ".."
+end 
 
 sparse = {"path" => "#{builddir}/sparsemapcontent", "repository" => "https://github.com/sakaiproject/sparsemapcontent.git", "branch" => "master", "localbranch" => "master"} if sparse.nil?
 solr = {"path" => "#{builddir}/solr", "repository" => "https://github.com/sakaiproject/solr.git", "branch" => "master", "localbranch" => "master"} if solr.nil?
