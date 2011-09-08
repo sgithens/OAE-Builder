@@ -531,6 +531,17 @@ task :setfsresource_uiconf => [:setuprequests] do
   setFsResource("/dev/configuration", "./ui-conf")
 end
 
+desc "Set up the stock development (not for production) proxy settings for Hybrid Mode"
+task :sethybridproxy_load do
+  File.open("./load/org.sakaiproject.nakamura.proxy.TrustedLoginTokenProxyPreProcessor.cfg", "w+") do |f|
+    f.write("sharedSecret=e2KS54H35j6vS5Z38nK40\n")
+    f.write("port=8880\n")
+    # Leaving as local host for initial testing
+    # f.write("hostname=#{hostname}")
+    f.write("hostname=localhost")
+  end
+end
+
 # ===========================================
 # = Creating users and groups =
 # ===========================================
@@ -772,7 +783,7 @@ desc "Update and rebuild the CLE"
 task :build_cle => [:update_cle, :rebuild_cle]
 
 desc "Build a hybrid server"
-task :hybrid => [:build, :run, :build_cle, :config_directoryprovider, :run_cle, :setfsresource_uiconf, :enable_hybrid]
+task :hybrid => [:build, :run, :build_cle, :config_directoryprovider, :run_cle, :setfsresource_uiconf, :sethybridproxy_load, :enable_hybrid]
 
 desc "Build a hybrid server from scratch, including checking out all the source."
 task :hybrid_scratch => [:clone, :clone_cle, :hybrid]
