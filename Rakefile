@@ -19,15 +19,15 @@ if not builddir then
   builddir = ".."
 end 
 
-sparse = {"path" => "#{builddir}/sparsemapcontent", "repository" => "https://github.com/sakaiproject/sparsemapcontent.git", "branch" => "master", "localbranch" => "master"} if sparse.nil?
-solr = {"path" => "#{builddir}/solr", "repository" => "https://github.com/sakaiproject/solr.git", "branch" => "master", "localbranch" => "master"} if solr.nil?
-nakamura = {"path" => "#{builddir}/nakamura", "repository" => "https://github.com/sakaiproject/nakamura.git", "branch" => "master", "localbranch" => "master", "port" => "8080"} if nakamura.nil?
+sparse = {"path" => "#{builddir}/sparsemapcontent", "repository" => "https://github.com/sakaiproject/sparsemapcontent.git", "branch" => "master", "localbranch" => "master"}
+solr = {"path" => "#{builddir}/solr", "repository" => "https://github.com/sakaiproject/solr.git", "branch" => "master", "localbranch" => "master"}
+nakamura = {"path" => "#{builddir}/nakamura", "repository" => "https://github.com/sakaiproject/nakamura.git", "branch" => "master", "localbranch" => "master", "port" => "8080"}
 
 
-server = [sparse, solr, nakamura]
 
-ui = {"path" => "#{builddir}/3akai-ux", "repository" => "https://github.com/sakaiproject/3akai-ux.git", "branch" => "master", "localbranch" => "master"} if ui.nil?
-fsresources = ["/dev", "/devwidgets", "/tests"] if fsresources.nil?
+
+ui = {"path" => "#{builddir}/3akai-ux", "repository" => "https://github.com/sakaiproject/3akai-ux.git", "branch" => "master", "localbranch" => "master"}
+fsresources = ["/dev", "/devwidgets", "/tests"]
 
 cle = {"path" => "#{builddir}/sakai-cle", "repository" => "https://source.sakaiproject.org/svn/sakai/tags/sakai-2.8.0", "port" => "8880", "ajp_port" => "8889" }
 hybrid = {"path" => "#{cle["path"]}/hybrid", "repository" => "https://source.sakaiproject.org/svn/hybrid/branches/hybrid-1.1.x"}
@@ -66,7 +66,9 @@ mvn_opts = "-B -e -Dmaven.test.skip"
 mvn_cmd = "#{mvn_exec} #{mvn_opts}"
 
 # read in and evaluate an external settings file
-eval File.open('settings.rb').read if File.exists?('settings.rb')
+eval File.open('./settings.rb').read if File.exists?('./settings.rb')
+
+server = [sparse, solr, nakamura]
 
 java_cmd = "#{java_exec} #{java_opts}"
 if java_debug
