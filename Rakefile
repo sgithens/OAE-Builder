@@ -23,9 +23,6 @@ sparse = {"path" => "#{builddir}/sparsemapcontent", "repository" => "https://git
 solr = {"path" => "#{builddir}/solr", "repository" => "https://github.com/sakaiproject/solr.git", "branch" => "master", "localbranch" => "master"}
 nakamura = {"path" => "#{builddir}/nakamura", "repository" => "https://github.com/sakaiproject/nakamura.git", "branch" => "master", "localbranch" => "master", "port" => "8080"}
 
-
-
-
 ui = {"path" => "#{builddir}/3akai-ux", "repository" => "https://github.com/sakaiproject/3akai-ux.git", "branch" => "master", "localbranch" => "master"}
 fsresources = ["/dev", "/devwidgets", "/tests"]
 
@@ -743,6 +740,27 @@ task :sendlotsofmessages => [:setuprequests] do
   end
 end
 
+desc "Add a lot of users as members to a group"
+task :addalluserstogroup => [:setuprequests] do
+  if (!(ENV["group"])) then
+    puts "Usage: rake adduserstogroup group=groupid-role num=numusers"
+  else
+    group = ENV["group"]
+    num_users_groups.times do |i|
+      i = i+1
+      puts "joining user#{i} to #{group}"
+      req = Net::HTTP::Post.new("/system/userManager/group/#{group}.update.json")
+      req.set_form_data({
+        ":member" => "user#{i}",
+        ":viewer" => "user#{i}",
+        "_charset_" => "utf-8"
+      })
+      req.basic_auth("admin", "admin")
+      response = @localinstance.request(req)
+      puts response
+    end
+  end
+end
 
 desc "[Alias to :status]"
 task :stat => :status do
