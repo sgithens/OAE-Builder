@@ -431,7 +431,7 @@ task :config do
   class TrustedLogin < Mustache
   end
   tl = TrustedLogin.new
-  tl["httpd_port"] = nakamura["port"]
+  tl["httpd_port"] = cle["port"]
   File.open("./sling/config/org/sakaiproject/nakamura/proxy/TrustedLoginTokenProxyPreProcessor.config", 'w') do |f|
     f.write(tl.render())
   end
