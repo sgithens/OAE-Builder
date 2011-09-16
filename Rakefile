@@ -26,7 +26,7 @@ nakamura = {"path" => "#{builddir}/nakamura", "repository" => "https://github.co
 ui = {"path" => "#{builddir}/3akai-ux", "repository" => "https://github.com/sakaiproject/3akai-ux.git", "branch" => "master", "localbranch" => "master"}
 fsresources = ["/dev", "/devwidgets", "/tests"]
 
-cle = {"path" => "#{builddir}/sakai-cle", "repository" => "https://source.sakaiproject.org/svn/sakai/tags/sakai-2.8.0", "port" => "8880", "ajp_port" => "8889" }
+cle = {"path" => "#{builddir}/sakai-cle", "repository" => "https://source.sakaiproject.org/svn/sakai/branches/sakai-2.8.1", "port" => "8880", "ajp_port" => "8889" }
 hybrid = {"path" => "#{cle["path"]}/hybrid", "repository" => "https://source.sakaiproject.org/svn/hybrid/branches/hybrid-1.1.x"}
 
 db = {"driver" => "derby", "user" => "sakaiuser", "password" => "ironchef", "db" => "nakamura"}
