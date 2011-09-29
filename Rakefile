@@ -31,7 +31,7 @@ hybrid = {"path" => "#{cle["path"]}/hybrid", "repository" => "https://source.sak
 
 db = {"driver" => "derby", "user" => "sakaiuser", "password" => "ironchef", "db" => "nakamura"}
 
-tomcat = {"mirror" => "apache.mirrors.tds.net", "version" => "5.5.33"}
+tomcat = {"mirror" => "apache.mirrors.tds.net", "version" => "5.5.34"}
 
 hostname = Socket.gethostname
 # don't worry, no data gets sent to this google ip
