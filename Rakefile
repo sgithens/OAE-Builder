@@ -11,6 +11,18 @@ require 'rexml/xpath'
 require 'zlib'
 require 'archive/tar/minitar'
 
+# KERN-2260
+if RUBY_VERSION =~ /^1\.8/
+  class Dir
+    class << self
+      def exists? (path)
+        File.directory?(path)
+      end
+      alias_method :exist?, :exists?
+    end
+  end
+end
+
 # Make sure we always start from where the Rakefile is
 Dir.chdir(File.dirname(__FILE__))
 
