@@ -31,11 +31,11 @@ if not builddir then
   builddir = ".."
 end 
 
-sparse = {"path" => "#{builddir}/sparsemapcontent", "repository" => "https://github.com/sakaiproject/sparsemapcontent.git", "branch" => "master", "localbranch" => "master"}
-solr = {"path" => "#{builddir}/solr", "repository" => "https://github.com/sakaiproject/solr.git", "branch" => "master", "localbranch" => "master"}
-nakamura = {"path" => "#{builddir}/nakamura", "repository" => "https://github.com/sakaiproject/nakamura.git", "branch" => "master", "localbranch" => "master", "port" => "8080"}
+sparse = {"path" => "#{builddir}/sparsemapcontent", "repository" => "git://github.com/sakaiproject/sparsemapcontent.git", "branch" => "master", "localbranch" => "master"}
+solr = {"path" => "#{builddir}/solr", "repository" => "git://github.com/sakaiproject/solr.git", "branch" => "master", "localbranch" => "master"}
+nakamura = {"path" => "#{builddir}/nakamura", "repository" => "git://github.com/sakaiproject/nakamura.git", "branch" => "master", "localbranch" => "master", "port" => "8080"}
 
-ui = {"path" => "#{builddir}/3akai-ux", "repository" => "https://github.com/sakaiproject/3akai-ux.git", "branch" => "master", "localbranch" => "master"}
+ui = {"path" => "#{builddir}/3akai-ux", "repository" => "git://github.com/sakaiproject/3akai-ux.git", "branch" => "master", "localbranch" => "master"}
 fsresources = ["/dev", "/devwidgets", "/tests"]
 
 cle = {"path" => "#{builddir}/sakai-cle", "repository" => "https://source.sakaiproject.org/svn/sakai/branches/sakai-2.8.1", "port" => "8880", "ajp_port" => "8889" }
