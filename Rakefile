@@ -807,7 +807,7 @@ desc "Build a hybrid server"
 task :hybrid => [:build, :run, :build_cle, :config_directoryprovider, :run_cle, :setfsresource_uiconf, :enable_hybrid]
 
 desc "Build a hybrid server from scratch, including checking out all the source."
-task :hybrid_scratch => [:clone, :clone_cle, :hybrid]
+task :hybrid_scratch => [:clean, :clone, :clone_cle, :hybrid]
 
 desc "Create users, greate groups, make connections, send messages, set FSResource, clean the UI"
 task :setup => [:createusers, :makeconnections, :sendmessages, :setfsresource, :cleanui]
