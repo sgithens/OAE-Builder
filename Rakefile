@@ -26,6 +26,8 @@ end
 # Make sure we always start from where the Rakefile is
 Dir.chdir(File.dirname(__FILE__))
 
+oaebuilder_dir = File.expand_path('.')
+
 builddir = ENV['builddir']
 if not builddir then
   builddir = ".."
@@ -497,11 +499,12 @@ def postJsonAsFile(path, json, server)
   File.delete("./tmp/#{filename}")
 end
 
-desc "Enable Hybrid Widgets"
-task :enable_hybrid do
+desc "Enable Hybrid Widgets and Config"
+task :enable_hybrid => [:setuprequests] do
   enableInPortal("devwidgets/mysakai2/config.json", "http://admin:admin@localhost:#{nakamura["port"]}")
   enableInSakaiDoc("devwidgets/basiclti/config.json", "http://admin:admin@localhost:#{nakamura["port"]}")
   enableInSakaiDoc("devwidgets/sakai2tools/config.json", "http://admin:admin@localhost:#{nakamura["port"]}")
+  setFsResource("/dev/configuration/config_custom.js", "#{oaebuilder_dir}/ui-conf/config_custom_hybrid.js")
 end
 
 # ==================
@@ -537,9 +540,8 @@ desc "Set fsresource just for the UI config"
 task :setfsresource_uiconf => [:setuprequests] do
   if not Dir.exists?("./ui-conf")
     FileUtils.cp_r("#{ui["path"]}/dev/configuration/", "./ui-conf")
-    FileUtils.cp("./templates/config_custom.js", "./ui-conf/")
   end
-  setFsResource("/dev/configuration", "./ui-conf")
+  setFsResource("/dev/configuration", "#{oaebuilder_dir}/ui-conf")
 end
 
 # ===========================================
