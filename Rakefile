@@ -113,7 +113,7 @@ task :clone do
       elsif p.has_key? "repository"
         puts "Cloning #{p["repository"]} to #{p["path"]}"
         Git.clone(p["repository"], p["path"])
-        if p.has_key? "remote" and ui["remote"] != "origin"
+        if p.has_key? "remote" and p["remote"] != "origin"
           cmds << "(cd #{p["path"]} && git remote rename origin #{p["remote"]})"
         end
       end
