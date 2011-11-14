@@ -74,11 +74,11 @@ app_file = "#{nakamura["path"]}/app/target/org.sakaiproject.nakamura.app-*.jar"
 # setup maven command and options
 mvn_exec = "mvn"
 mvn_opts = "-B -e -Dmaven.test.skip"
-mvn_cmd = "#{mvn_exec} #{mvn_opts}"
 
 # read in and evaluate an external settings file
 eval File.open('./settings.rb').read if File.exists?('./settings.rb')
 
+mvn_cmd = "#{mvn_exec} #{mvn_opts}"
 server = [sparse, solr, nakamura]
 
 java_cmd = "#{java_exec} #{java_opts}"
