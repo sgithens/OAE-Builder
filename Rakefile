@@ -656,66 +656,29 @@ task :creategroups => [:setuprequests] do
   num_users_groups.times do |i|
     i = i+1
     puts "Creating Group #{i}"
-    req = Net::HTTP::Post.new("/system/userManager/group.create.html")
-    req.set_form_data({
-      ":name" => "group#{i}",
-      ":sakai:manager" => "user#{i}",
-      "sakai:group-title" => "Group #{i}",
-      "sakai:group-description" => "Group #{i} description",
-      "sakai:group-joinable" => "yes",
-      "sakai:group-visible" => "public",
-      "sakai:pages-visible" => "public",
-      "_charset_" => "utf-8"
-    })
+    req = Net::HTTP::Post.new("/system/world/create")
+    json = {
+      "id" => "group#{i}",
+      "title" => "Group #{i}",
+      "description" => "Group #{i} description",
+      "joinability" => "yes",
+      "visibility" => "public",
+      "tags" => [],
+      "worldTemplate" => "/var/templates/worlds/group/simple-group",
+      "_charset_" => "utf-8",
+      "usersToAdd" => [{
+        "userid" => "user#{i}",
+        "name" => "User #{i}",
+        "firstname" => "User",
+        "role" => "manager",
+        "roleString" => "Manager",
+        "creator" => "true"
+      }]
+    }
+    req.set_form_data({ "data" => JSON.generate(json) })
     req.basic_auth("admin", "admin")
     response = @localinstance.request(req)
     puts response
-
-    ["anonymous", "everyone"].each do |grant|
-      req = Net::HTTP::Post.new("/~group#{i}.modifyAce.html")
-      req.set_form_data({
-        "principalId" => "#{grant}",
-        "privilege@jcr:read" => "granted",
-        "_charset_" => "utf-8"
-      })
-      req.basic_auth("admin", "admin")
-      response = @localinstance.request(req)
-      puts response
-    end
-  end
-end
-
-desc "Create 5 groups that are joinable."
-task :createjoinablegroups => [:setuprequests] do
-  5.times do |i|
-    i = i+1
-    puts "Creating Group #{i}"
-    req = Net::HTTP::Post.new("/system/userManager/group.create.html")
-    req.set_form_data({
-      ":name" => "groupjoinable#{i}",
-      ":sakai:manager" => "user#{i}",
-      "sakai:group-title" => "Group Joinable #{i}",
-      "sakai:group-description" => "Group Joinable #{i} description",
-      "sakai:group-joinable" => "withauth",
-      "sakai:group-visible" => "public",
-      "sakai:pages-visible" => "public",
-      "_charset_" => "utf-8"
-    })
-    req.basic_auth("admin", "admin")
-    response = @localinstance.request(req)
-    puts response
-
-    ["anonymous", "everyone"].each do |grant|
-      req = Net::HTTP::Post.new("/~group#{i}.modifyAce.html")
-      req.set_form_data({
-        "principalId" => "#{grant}",
-        "privilege@jcr:read" => "granted",
-        "_charset_" => "utf-8"
-      })
-      req.basic_auth("admin", "admin")
-      response = @localinstance.request(req)
-      puts response
-    end
   end
 end
 
@@ -812,7 +775,7 @@ desc "Build a hybrid server from scratch, including checking out all the source.
 task :hybrid_scratch => [:clean, :clone, :clone_cle, :hybrid]
 
 desc "Create initial content (users, connections, messages)"
-task :setupcontent => [:createusers, :makeconnections, :sendmessages]
+task :setupcontent => [:createusers, :makeconnections, :sendmessages, :creategroups]
 
 desc "Create users, greate groups, make connections, send messages, set FSResource, clean the UI"
 task :setup => [:setupcontent, :setfsresource, :cleanui]
