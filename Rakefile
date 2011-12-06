@@ -811,8 +811,11 @@ task :hybrid => [:build, :run, :build_cle, :config_directoryprovider, :run_cle, 
 desc "Build a hybrid server from scratch, including checking out all the source."
 task :hybrid_scratch => [:clean, :clone, :clone_cle, :hybrid]
 
+desc "Create initial content (users, connections, messages)"
+task :setupcontent => [:createusers, :makeconnections, :sendmessages]
+
 desc "Create users, greate groups, make connections, send messages, set FSResource, clean the UI"
-task :setup => [:createusers, :makeconnections, :sendmessages, :setfsresource, :cleanui]
+task :setup => [:setupcontent, :setfsresource, :cleanui]
 
 desc "Create a release build of the UI, regular build of everything else, and run it."
 task :release => [:clean, :update, :release_build, :run]
