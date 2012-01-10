@@ -48,10 +48,6 @@ db = {"driver" => "derby", "user" => "sakaiuser", "password" => "ironchef", "db"
 tomcat = {"mirror" => "apache.mirrors.tds.net", "version" => "5.5.34"}
 
 hostname = Socket.gethostname
-# don't worry, no data gets sent to this google ip
-# Since UDP is a stateless protocol connect() merely makes a system call
-# which figures out how to route the packets
-ip = UDPSocket.open {|s| s.connect('64.233.187.99', 1); s.addr.last }
 
 templatePath = "./templates"
 
@@ -404,6 +400,10 @@ task :config_cle => [:unpack_tomcat] do
   sakaiprops[:server] = hostname
   sakaiprops[:build_date] = Time.now
   sakaiprops[:k2_http_port] = nakamura["port"]
+  # don't worry, no data gets sent to this google ip
+  # Since UDP is a stateless protocol connect() merely makes a system call
+  # which figures out how to route the packets
+  ip = UDPSocket.open {|s| s.connect('64.233.187.99', 1); s.addr.last }
   sakaiprops[:external_ip] = ip
   if not Dir.exists? "./sakai2-demo/sakai"
     Dir.mkdir("./sakai2-demo/sakai")
