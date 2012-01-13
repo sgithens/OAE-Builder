@@ -144,7 +144,6 @@ namespace :cle do
   end
 
   def enableInPortal(path, server)
-    json = ""
     resp = RestClient.get("#{server}/#{path}")
     json = JSON.parse(resp.to_str)
     json["personalportal"] = true
@@ -152,7 +151,6 @@ namespace :cle do
   end
 
   def enableInSakaiDoc(path, server)
-    json = ""
     resp = RestClient.get("#{server}/#{path}")
     json = JSON.parse(resp.to_str)
     json["sakaidocs"] = true
@@ -177,7 +175,6 @@ namespace :cle do
   namespace :config do
     desc "Configure the CLE to use NakamuraUserDirectoryProvider"
     task :directoryprovider do #=> 'cle:build' do
-      cXML = ""
       components = 'sakai2-demo/components/sakai-provider-pack/WEB-INF/components.xml'
       File.open(components) do |f|
         cXML = REXML::Document.new(f)
