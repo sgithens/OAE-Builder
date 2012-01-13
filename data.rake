@@ -9,7 +9,7 @@ namespace :data do
         i = i+1
         nextuser = i % @num_users_groups + 1
   
-        puts "Requesting connection between User #{i} and User #{nextuser}"
+        @logger.info "Requesting connection between User #{i} and User #{nextuser}"
         req = Net::HTTP::Post.new("/~user#{i}/contacts.invite.html")
         req.set_form_data({
           "fromRelationships" => "Classmate",
@@ -19,9 +19,9 @@ namespace :data do
         })
         req.basic_auth("user#{i}", "test")
         response = @localinstance.request(req)
-        puts response
+        @logger.info response
   
-        puts "Accepting connection between User #{i} and User #{nextuser}"
+        @logger.info "Accepting connection between User #{i} and User #{nextuser}"
         req = Net::HTTP::Post.new("/~user#{nextuser}/contacts.accept.html")
         req.set_form_data({
           "targetUserId" => "user#{i}",
@@ -40,7 +40,7 @@ namespace :data do
           j=j+1
           unless i == j
             nextuser = j
-            puts "Requesting connection between User #{i} and User #{nextuser}"
+            @logger.info "Requesting connection between User #{i} and User #{nextuser}"
             req = Net::HTTP::Post.new("/~user#{i}/contacts.invite.html")
             req.set_form_data({
               "fromRelationships" => "Classmate",
@@ -50,9 +50,9 @@ namespace :data do
             })
             req.basic_auth("user#{i}", "test")
             response = @localinstance.request(req)
-            puts response
+            @logger.info response
     
-            puts "Accepting connection between User #{i} and User #{nextuser}"
+            @logger.info "Accepting connection between User #{i} and User #{nextuser}"
             req = Net::HTTP::Post.new("/~user#{nextuser}/contacts.accept.html")
             req.set_form_data({
               "targetUserId" => "user#{i}",
@@ -73,12 +73,12 @@ namespace :data do
     desc "Add a lot of users as members to a group"
     task :addallusers => [:setuprequests] do
       if (!(ENV["group"])) then
-        puts "Usage: rake adduserstogroup group=groupid-role num=numusers"
+        @logger.info "Usage: rake adduserstogroup group=groupid-role num=numusers"
       else
         group = ENV["group"]
         @num_users_groups.times do |i|
           i = i+1
-          puts "joining user#{i} to #{group}"
+          @logger.info "joining user#{i} to #{group}"
           req = Net::HTTP::Post.new("/system/userManager/group/#{group}.update.json")
           req.set_form_data({
             ":member" => "user#{i}",
@@ -87,7 +87,7 @@ namespace :data do
           })
           req.basic_auth("admin", "admin")
           response = @localinstance.request(req)
-          puts response
+          @logger.info response
         end
       end
     end
@@ -96,7 +96,7 @@ namespace :data do
     task :create => [:setuprequests] do
       @num_users_groups.times do |i|
         i = i+1
-        puts "Creating Group #{i}"
+        @logger.info "Creating Group #{i}"
         req = Net::HTTP::Post.new("/system/world/create")
         json = {
           "id" => "group#{i}",
@@ -119,7 +119,7 @@ namespace :data do
         req.set_form_data({ "data" => JSON.generate(json) })
         req.basic_auth("admin", "admin")
         response = @localinstance.request(req)
-        puts response
+        @logger.info response
       end
     end
   end
@@ -131,31 +131,31 @@ namespace :data do
         i += 1
         nextuser = i % @num_users_groups + 1
   
-        puts "Sending internal message: user#{i} => user#{nextuser}"
-        puts send_internal_message("user#{i}", "user#{nextuser}", "test #{i} => #{nextuser}", "test body #{i} => #{nextuser}")
+        @logger.info "Sending internal message: user#{i} => user#{nextuser}"
+        @logger.info send_internal_message("user#{i}", "user#{nextuser}", "test #{i} => #{nextuser}", "test body #{i} => #{nextuser}")
   
-        puts "Sending smtp message: user#{i} => user#{nextuser}"
-        puts send_smtp_message("user#{i}", "user#{nextuser}", "test #{i} => #{nextuser}", "test body #{i} => #{nextuser}")
+        @logger.info "Sending smtp message: user#{i} => user#{nextuser}"
+        @logger.info send_smtp_message("user#{i}", "user#{nextuser}", "test #{i} => #{nextuser}", "test body #{i} => #{nextuser}")
   
-        puts "Sending internal message: user#{nextuser} => user#{i}"
-        puts send_internal_message("user#{nextuser}", "user#{i}", "test #{nextuser} => #{i}", "test body #{nextuser} => #{i}")
+        @logger.info "Sending internal message: user#{nextuser} => user#{i}"
+        @logger.info send_internal_message("user#{nextuser}", "user#{i}", "test #{nextuser} => #{i}", "test body #{nextuser} => #{i}")
   
-        puts "Sending smtp message: user#{nextuser} => user#{i}"
-        puts send_smtp_message("user#{nextuser}", "user#{i}", "test #{nextuser} => #{i}", "test body #{nextuser} => #{i}")
+        @logger.info "Sending smtp message: user#{nextuser} => user#{i}"
+        @logger.info send_smtp_message("user#{nextuser}", "user#{i}", "test #{nextuser} => #{i}", "test body #{nextuser} => #{i}")
       end
     end
   
     desc "Send lots of messages to the specified user, from the specified user"
     task :sendlots => [:setuprequests] do
       if (!(ENV["to"] && ENV["from"] && ENV["num"])) then
-        puts "Usage: rake sendlotsofmessages to=user1 from=user2 num=60"
+        @logger.info "Usage: rake sendlotsofmessages to=user1 from=user2 num=60"
       else
         to = ENV["to"]
         from = ENV["from"]
         num = ENV["num"].to_i
-        puts "Sending #{num} messages from #{from} to #{to}"
+        @logger.info "Sending #{num} messages from #{from} to #{to}"
         num.times do |i|
-          puts send_internal_message("#{to}", "#{from}", "Message #{i} #{from} => #{to}", "Body of Message #{i} #{from} => #{to}")
+          @logger.info send_internal_message("#{to}", "#{from}", "Message #{i} #{from} => #{to}", "Body of Message #{i} #{from} => #{to}")
         end
       end
     end
@@ -166,7 +166,7 @@ namespace :data do
     task :create => [:setuprequests] do
       @num_users_groups.times do |i|
         i = i+1
-        puts "Creating User #{i}"
+        @logger.info "Creating User #{i}"
         req = Net::HTTP::Post.new("/system/userManager/user.create.html")
         req.set_form_data({
           ":name" => "user#{i}",
@@ -182,7 +182,7 @@ namespace :data do
         })
         req.basic_auth("admin", "admin")
         response = @localinstance.request(req)
-        puts response
+        @logger.info response
       end
     end
   end

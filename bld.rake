@@ -4,9 +4,9 @@ namespace :bld do
     cmds = []
     if @ui.has_key? "path"
       if File.directory? @ui["path"]
-        puts "#{@ui["path"]} already exists."
+        @logger.info "#{@ui["path"]} already exists."
       elsif @ui.has_key? "repository"
-        puts "Cloning #{@ui["repository"]} to #{@ui["path"]}"
+        @logger.info "Cloning #{@ui["repository"]} to #{@ui["path"]}"
         Git.clone(@ui["repository"], @ui["path"])
         if @ui.has_key? "remote" and @ui["remote"] != "origin"
           cmds << "(cd #{@ui["path"]} && git remote rename origin #{@ui["remote"]})"
@@ -17,9 +17,9 @@ namespace :bld do
     for p in @server
       if p.has_key? "path"
         if File.directory? p["path"]
-          puts "#{p["path"]} already exists."
+          @logger.info "#{p["path"]} already exists."
         elsif p.has_key? "repository"
-          puts "Cloning #{p["repository"]} to #{p["path"]}"
+          @logger.info "Cloning #{p["repository"]} to #{p["path"]}"
           Git.clone(p["repository"], p["path"])
           if p.has_key? "remote" and p["remote"] != "origin"
             cmds << "(cd #{p["path"]} && git remote rename origin #{p["remote"]})"
@@ -29,11 +29,11 @@ namespace :bld do
     end
 
     if !cmds.empty?
-      puts "\nPlease issue the following commands:"
+      @logger.info "\nPlease issue the following commands:"
       cmds.each do |cmd|
-        puts cmd
+        @logger.info cmd
       end
-      puts ""
+      @logger.info ""
     end
   end
 
@@ -50,10 +50,10 @@ namespace :bld do
       remote = @ui["remote"] || "origin"
       branch = remote + "/" + (@ui["branch"] || "master")
       localbranch = @ui["localbranch"] || "master"
-      puts "Checkout out #{localbranch}"
+      @logger.info "Checkout out #{localbranch}"
       g.checkout(g.branch(localbranch))
-      puts "Updating #{@ui["path"]}:#{branch}"
-      puts g.pull(remote, branch)
+      @logger.info "Updating #{@ui["path"]}:#{branch}"
+      @logger.info g.pull(remote, branch)
     end
 
     for p in @server do
@@ -61,10 +61,10 @@ namespace :bld do
       remote = p["remote"] || "origin"
       branch = remote + "/" + (p["branch"] || "master")
       localbranch = p["localbranch"] || "master"
-      puts "Checkout out #{localbranch}"
+      @logger.info "Checkout out #{localbranch}"
       g.checkout(g.branch(localbranch))
-      puts "Updating #{p["path"]}:#{branch}"
-      puts g.pull(remote, branch)
+      @logger.info "Updating #{p["path"]}:#{branch}"
+      @logger.info g.pull(remote, branch)
     end
   end
 

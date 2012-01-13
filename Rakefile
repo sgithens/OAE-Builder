@@ -10,6 +10,20 @@ require 'rexml/document'
 require 'rexml/xpath'
 require 'zlib'
 require 'archive/tar/minitar'
+require 'logger'
+
+# Our own little logger, because the default one is ugly
+class SakaiLogger < Logger::Formatter
+  def call(severity, time, program_name, message)
+    datetime = time.strftime("%Y-%m-%d %H:%M")
+    "[#{datetime}] #{severity}: #{String(message)}\n"
+  end
+end
+
+# before settings is created
+logger = Logger.new STDOUT
+logger.formatter = SakaiLogger.new
+logger.level = Logger::DEBUG
 
 # KERN-2260
 if RUBY_VERSION =~ /^1\.8/
@@ -89,13 +103,6 @@ end
 
 CLEAN_FILES = ["./derby.log", "./sling", "./activemq-data", "./store", "./sakai2-demo", "./tmp", "./ui-conf"]
 
-puts "Using settings:"
-puts "JAVA: #{@java_cmd}"
-puts "MVN:  #{@mvn_cmd}"
-p ui
-p server
-puts ""
-
 ## copy some vars to a higher scope for commands defined in separate rake files
 ## we do it this way so changes in settings.rb are local vars and you don't have
 ## to keep track of the scope of the settings.
@@ -114,6 +121,14 @@ puts ""
 @update_ui = update_ui
 @app_file = app_file
 @app_opts = app_opts
+@logger = logger
+
+## log some initial values before reading in other task definitions
+@logger.info "Using settings:"
+@logger.info "  JAVA:   #{@java_cmd}"
+@logger.info "  MVN:    #{@mvn_cmd}"
+@logger.info "  UI:     #{ui.inspect}"
+@logger.info "  SERVER: #{server.inspect}"
 
 # include external rake file for custom tasks
 Dir.glob('*.rake').each { |r| import r }

@@ -10,7 +10,7 @@ namespace :ctl do
     abort("Unable to find application version") if app_file.nil?
   
     CMD = "#{@java_cmd} -jar #{app_file} #{@app_opts}"
-    p "Starting server with #{CMD}"
+    @logger.info "Starting server with #{CMD}"
   
     pid = fork { exec( CMD ) }
     Process.detach(pid)
@@ -34,14 +34,14 @@ namespace :ctl do
           pid = line.to_i
           begin
             Process.kill 0, pid
-            puts "pid [#{pid}] is still running."
+            @logger.info "pid [#{pid}] is still running."
           rescue
-            puts "pid [#{pid}] is no longer valid."
+            @logger.info "pid [#{pid}] is no longer valid."
           end
         end
       end
     else
-      puts ".nakamua.pid doesn't exist."
+      @logger.info ".nakamua.pid doesn't exist."
     end
   end
 
@@ -54,7 +54,7 @@ namespace :ctl do
           pid = line.to_i
           begin
             Process.kill(signal, pid)
-            puts "Killing pid #{pid}"
+            @logger.info "Killing pid #{pid}"
             while (sleep 5) do
               begin
                 Process.getpgid(pid)
@@ -63,7 +63,7 @@ namespace :ctl do
               end
             end
           rescue
-            puts "Didn't find pid #{pid}"
+            @logger.info "Didn't find pid #{pid}"
           end
         end
       end

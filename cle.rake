@@ -3,7 +3,7 @@ namespace :cle do
   task :clone do
     if @cle.has_key? "path"
       if File.directory? @cle["path"]
-        puts "#{@cle["path"]} already exists."
+        @logger.info "#{@cle["path"]} already exists."
       elsif @cle.has_key? "repository"
         system("svn -q checkout #{@cle["repository"]} #{@cle["path"]}")
         if @hybrid.has_key? "path" and @hybrid.has_key? "repository"
@@ -17,10 +17,10 @@ namespace :cle do
   desc "Update the SVN checkout of CLE"
   task :update do
     if @cle.has_key? "path" and File.directory? @cle["path"]
-      puts "Updating #{@cle["path"]}"
+      @logger.info "Updating #{@cle["path"]}"
       system("svn -q update #{@cle["path"]}")
       if @hybrid.has_key? "path" and File.directory? @hybrid["path"]
-        puts "Updating #{@hybrid["path"]}"
+        @logger.info "Updating #{@hybrid["path"]}"
         system("svn -q update #{@hybrid["path"]}")
       end
     end
@@ -120,7 +120,7 @@ namespace :cle do
   namespace :tomcat do
     desc "Unpack Tomcat tarball"
     task :unpack => 'cle:tomcat:dl' do
-      puts "Unpacking #{@tomcat["filename"]}"
+      @logger.info "Unpacking #{@tomcat["filename"]}"
       Dir.chdir(File.dirname(@tomcat["filename"])) do
         tgz = Zlib::GzipReader.new(File.open(@tomcat["filename"], 'rb'))
         Archive::Tar::Minitar.unpack(tgz, './tmp')
@@ -132,7 +132,7 @@ namespace :cle do
     task :dl do
       @tomcat["filename"] = "apache-tomcat-#{@tomcat["version"]}.tar.gz"
       unless File.exists? @tomcat["filename"]
-        puts "Downloading #{@tomcat["filename"]} from #{@tomcat["mirror"]}"
+        @logger.info "Downloading #{@tomcat["filename"]} from #{@tomcat["mirror"]}"
         Net::HTTP.start(@tomcat["mirror"]) do |http|
           resp = http.get("/tomcat/tomcat-5/v#{@tomcat["version"]}/bin/#{@tomcat["filename"]}")
           open("#{@tomcat["filename"]}", "wb") do |file|

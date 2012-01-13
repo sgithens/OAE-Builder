@@ -51,7 +51,7 @@ namespace :conf do
       req = Net::HTTP::Post.new(url)
       req.basic_auth("admin", "admin")
       response = @localinstance.request(req)
-      puts response.inspect
+      @logger.info response.inspect
     end
 
     desc "Set the FSResource configs to use the UI files on disk."
