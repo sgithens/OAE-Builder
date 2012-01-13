@@ -68,7 +68,7 @@ namespace :cle do
     # which figures out how to route the packets
     ip = UDPSocket.open {|s| s.connect('64.233.187.99', 1); s.addr.last }
     sakaiprops[:external_ip] = ip
-    if not Dir.exists? "./sakai2-demo/sakai"
+    unless Dir.exists? "./sakai2-demo/sakai"
       Dir.mkdir("./sakai2-demo/sakai")
     end
     File.open("./sakai2-demo/sakai/sakai.properties", 'w') do |f|
@@ -131,7 +131,7 @@ namespace :cle do
     desc "Download Tomcat tarball"
     task :dl do
       @tomcat["filename"] = "apache-tomcat-#{@tomcat["version"]}.tar.gz"
-      if not File.exists? @tomcat["filename"]
+      unless File.exists? @tomcat["filename"]
         puts "Downloading #{@tomcat["filename"]} from #{@tomcat["mirror"]}"
         Net::HTTP.start(@tomcat["mirror"]) do |http|
           resp = http.get("/tomcat/tomcat-5/v#{@tomcat["version"]}/bin/#{@tomcat["filename"]}")
@@ -163,7 +163,7 @@ namespace :cle do
     filename = File.basename(path)
     # I'd rather not write out an intermediary file here, but I'm not sure it's
     # possible to avoid it.
-    if not Dir.exists?("./tmp")
+    unless Dir.exists?("./tmp")
       Dir.mkdir("./tmp")
     end
     File.open("./tmp/#{filename}", "w") do |temp|

@@ -29,7 +29,7 @@ Dir.chdir(File.dirname(__FILE__))
 @oaebuilder_dir = File.expand_path('.')
 
 @builddir = ENV['builddir']
-if not @builddir then
+unless @builddir then
   @builddir = ".."
 end 
 

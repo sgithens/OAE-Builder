@@ -64,7 +64,7 @@ namespace :conf do
 
     desc "Set fsresource just for the UI config"
     task :uiconf => [:setuprequests] do
-      if not Dir.exists?("./ui-conf")
+      unless Dir.exists?("./ui-conf")
         FileUtils.cp_r("#{@ui["path"]}/dev/configuration/", "./ui-conf")
       end
       setFsResource("/dev/configuration", "#{@oaebuilder_dir}/ui-conf")
