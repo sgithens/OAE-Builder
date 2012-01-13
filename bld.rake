@@ -14,7 +14,7 @@ namespace :bld do
       end
     end
 
-    for p in @server
+    @server.each do |p|
       if p.has_key? "path"
         if File.directory? p["path"]
           @logger.info "#{p["path"]} already exists."
@@ -56,7 +56,7 @@ namespace :bld do
       @logger.info g.pull(remote, branch)
     end
 
-    for p in @server do
+    @server.each do |p|
       g = Git.open(p["path"])
       remote = p["remote"] || "origin"
       branch = remote + "/" + (p["branch"] || "master")
@@ -75,7 +75,7 @@ namespace :bld do
     Dir.chdir @ui["path"] do
       system("#{@mvn_cmd} clean install")
     end
-    for p in @server do
+    @server.each do |p|
       Dir.chdir p["path"] do
         system("#{@mvn_cmd} clean install")
       end
@@ -120,7 +120,7 @@ namespace :bld do
       Dir.chdir @ui["path"] do
         system("#{@mvn_cmd} clean install -P sakai-release")
       end
-      for p in @server do
+      @server.each do |p|
         Dir.chdir p["path"] do
           system("#{@mvn_cmd} clean install")
         end
