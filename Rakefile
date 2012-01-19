@@ -154,7 +154,7 @@ task :setuprequests do
 end
 
 desc 'Create users, greate groups, make connections, send messages, set FSResource, clean the UI'
-task :setup => ['data:setup', 'conf:fsresource:set', 'bld:cleanui']
+task :setup => ['data:setup', 'conf:fsresource:set', 'bld:clean:ui']
 
 desc 'Clean, build and run'
 task :default => ['bld:clean', 'bld:build', 'ctl:run']
