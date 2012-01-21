@@ -11,3 +11,5 @@ apache-tomcat*.tar.gz
 sakai2-demo/
 tmp/
 ui-conf/
+bin/
+.rvmrc
