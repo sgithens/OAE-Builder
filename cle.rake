@@ -111,7 +111,7 @@ namespace :cle do
     end
 
     desc "Build a hybrid server"
-    task :build => ['bld:build', 'ctl:run', 'cle:build', 'cle:config:directoryprovider', 'cle:run', 'conf:setfsresource:uiconf', 'cle:hybrid:enable']
+    task :build => ['bld:build', 'ctl:run', 'cle:build', 'cle:config:directoryprovider', 'cle:run', 'conf:fsresource:uiconf', 'cle:hybrid:enable']
 
     desc "Build a hybrid server from scratch, including checking out all the source."
     task :scratch => ['bld:clean', 'bld:clone', 'cle:clone', 'cle:hybrid:build']
