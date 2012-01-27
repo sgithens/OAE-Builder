@@ -134,7 +134,7 @@ namespace :cle do
       unless File.exists? @tomcat["filename"]
         @logger.info "Downloading #{@tomcat["filename"]} from #{@tomcat["mirror"]}"
         Net::HTTP.start(@tomcat["mirror"]) do |http|
-          resp = http.get("/tomcat/tomcat-5/v#{@tomcat["version"]}/bin/#{@tomcat["filename"]}")
+          resp = http.get("/#{@tomcat["prefix"]}/tomcat/tomcat-5/v#{@tomcat["version"]}/bin/#{@tomcat["filename"]}")
           open("#{@tomcat["filename"]}", "wb") do |file|
             file.write(resp.body)
           end
@@ -176,6 +176,7 @@ namespace :cle do
     desc "Configure the CLE to use NakamuraUserDirectoryProvider"
     task :directoryprovider do #=> 'cle:build' do
       components = 'sakai2-demo/components/sakai-provider-pack/WEB-INF/components.xml'
+      cXML = nil 
       File.open(components) do |f|
         cXML = REXML::Document.new(f)
         beans = REXML::XPath.first(cXML, '//beans')
