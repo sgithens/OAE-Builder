@@ -1,12 +1,14 @@
 GEM
   remote: http://rubygems.org/
   specs:
-    git (1.2.5)
+    git (1.11.0)
+      rchardet (~> 1.8)
     json (1.5.3)
     mime-types (1.16)
     minitar (0.5.3)
     mustache (0.99.4)
     mysql (2.8.1)
+    rchardet (1.8.0)
     rest-client (1.6.3)
       mime-types (>= 1.16)
 
